@@ -7,7 +7,7 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize(Roles = "Admin")]
+[Authorize(Policy = "Admin")]
 public class DashboardController(IDashboardService dashboardService) : ControllerBase
 {
     [HttpGet("stats")]

@@ -10,17 +10,18 @@ public class OrdersService(AppDbContext context) : IOrdersService
 {
     public async Task<IEnumerable<Order>> GetOrdersAsync()
     {
-        return await context.Orders.Include(o => o.OrderItems)!.ThenInclude(oi => oi.Product).ToListAsync();
+
+        return await context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Product).ToListAsync();
     }
 
     public async Task<Order?> GetOrderByIdAsync(int id)
     {
-        //seguir con esta parte para estudiar
         return await context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Product).FirstOrDefaultAsync(o => o.Id == id);
     }
 
     public async Task<Order> CreateOrderAsync(OrderDto orderDto)
     {
+
         // Obtener todos los productos de una vez
         var productIds = orderDto.OrderItems.Select(i => i.ProductId).ToList();
         var products = await context.Products.Where(p => productIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
@@ -29,7 +30,7 @@ public class OrdersService(AppDbContext context) : IOrdersService
         {
             UserId = orderDto.UserId,
             OrderDate = DateTime.UtcNow,
-            OrderItems = new List<OrderItem>()
+            OrderItems = []
         };
 
         decimal totalAmount = 0;

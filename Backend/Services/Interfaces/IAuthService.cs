@@ -4,7 +4,7 @@ namespace Backend.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<User> Register(User user, string password);
-    Task<string> Login(LoginDto loginDto);
-    // Task<bool> UserExists(string username); // This might be internal
+    Task<(User? response, bool succeeded)> RegisterUserAsync(RegisterDto model);
+    Task<(User? response, bool succeeded)> LoginUserAsync(LoginDto model);
+
 }
