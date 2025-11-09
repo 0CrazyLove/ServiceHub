@@ -1,5 +1,4 @@
-namespace Backend.Models.DTOs;
-
+namespace Backend.DTOs;
 public class ProductDto
 {
     public string? Name { get; set; }

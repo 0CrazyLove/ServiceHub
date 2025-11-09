@@ -1,22 +1,19 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Backend.Services.Interfaces;
+using Backend.DTOs;
 
 namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 // [Authorize(Roles = "Admin")]
-public class DashboardController : ControllerBase
+public class DashboardController(IDashboardService dashboardService) : ControllerBase
 {
     [HttpGet("stats")]
-    public IActionResult GetStats()
+    public async Task<ActionResult<DashboardStatsDto>> GetStats()
     {
-        // Dummy data. In a real app, query the database.
-        var stats = new
-        {
-            TotalSales = 12500.50m,
-            ProductCount = 10,
-            OrderCount = 50
-        };
+        var stats = await dashboardService.GetDashboardStatsAsync();
         return Ok(stats);
     }
 }

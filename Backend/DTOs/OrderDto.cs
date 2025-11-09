@@ -1,6 +1,4 @@
-
-namespace Backend.Models.DTOs;
-
+namespace Backend.DTOs;
 public class OrderDto
 {
     public int UserId { get; set; }
