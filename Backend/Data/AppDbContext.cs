@@ -7,7 +7,7 @@ namespace Backend.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<IdentityUser>(options)
 {
-    public DbSet<Product> Products { get; set; }
+    public DbSet<Service> Services { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 }
