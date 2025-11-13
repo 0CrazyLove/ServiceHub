@@ -146,3 +146,59 @@ export async function deleteService(id, token) {
     throw error;
   }
 }
+
+// ===== AUTENTICACIÓN =====
+
+/**
+ * Registrar un nuevo usuario
+ * @param {Object} data - Datos del registro
+ * @param {string} data.userName - Nombre de usuario
+ * @param {string} data.email - Email del usuario
+ * @param {string} data.password - Contraseña
+ * @param {string} data.confirmPassword - Confirmación de contraseña
+ */
+export async function registerUser(data) {
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword
+      })
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error al registrar:', error);
+    throw error;
+  }
+}
+
+/**
+ * Login de usuario
+ * @param {Object} data - Datos del login
+ * @param {string} data.email - Email del usuario
+ * @param {string} data.password - Contraseña
+ */
+export async function loginUser(data) {
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password
+      })
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error);
+    throw error;
+  }
+}
