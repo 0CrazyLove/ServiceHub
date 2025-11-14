@@ -202,3 +202,28 @@ export async function loginUser(data) {
     throw error;
   }
 }
+
+// ===== DASHBOARD =====
+
+/**
+ * Obtener estadísticas del dashboard (requiere token Admin)
+ * @param {string} token - Token JWT del usuario con permisos Admin
+ */
+export async function getDashboardStats(token) {
+  try {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}/dashboard/stats`, {
+      method: 'GET',
+      headers
+    });
+
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error al obtener estadísticas del dashboard:', error);
+    throw error;
+  }
+}
