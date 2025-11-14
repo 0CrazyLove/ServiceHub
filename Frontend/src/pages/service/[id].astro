@@ -1,0 +1,21 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.jsx';
+import Footer from '../../components/Footer.jsx';
+import ServiceDetails from '../../components/ServiceDetails.jsx';
+
+const { params } = Astro;
+const id = params.id;
+---
+
+<Layout>
+  <Header client:load />
+  <main class="bg-primary-darkest min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+      <ServiceDetails client:load serviceId={Number(id)} />
+    </div>
+  </main>
+  <Footer client:load />
+</Layout>
