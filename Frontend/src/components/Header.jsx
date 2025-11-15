@@ -51,7 +51,7 @@ export default function Header() {
 
   useEffect(() => {
     if (!mounted) return;
-    
+
     setShowAdmin(isUserAdmin());
   }, [mounted, user]);
 
@@ -59,29 +59,27 @@ export default function Header() {
   if (!mounted) {
     return (
       <header className="bg-primary-dark shadow-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <a href="/" className="text-2xl font-bold text-primary-lightest hover:text-primary-accent">
-            ServiceHub
+        <a href="/" className="text-2xl font-bold text-primary-lightest hover:text-primary-accent">
+          ServiceHub
+        </a>
+        <nav>
+          <a href="/" className="text-primary-light hover:text-primary-lightest px-3 py-2">Inicio</a>
+          <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Servicios</a>
+          <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Acerca de</a>
+        </nav>
+        <div className="flex items-center gap-3">
+          <a
+            href="/login"
+            className="text-primary-light hover:text-primary-lightest px-3 py-2"
+          >
+            Iniciar Sesión
           </a>
-          <nav>
-            <a href="/" className="text-primary-light hover:text-primary-lightest px-3 py-2">Inicio</a>
-            <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Servicios</a>
-            <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Acerca de</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <a 
-              href="/login" 
-              className="text-primary-light hover:text-primary-lightest px-3 py-2"
-            >
-              Iniciar Sesión
-            </a>
-            <a 
-              href="/registro" 
-              className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
-            >
-              Registrarse
-            </a>
-          </div>
+          <a
+            href="/registro"
+            className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
+          >
+            Registrarse
+          </a>
         </div>
       </header>
     );
@@ -89,23 +87,23 @@ export default function Header() {
 
   return (
     <header className="bg-primary-dark shadow-md">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="px-4 py-4 flex items-center gap-8">
         <a href="/" className="text-2xl font-bold text-primary-lightest hover:text-primary-accent">
           ServiceHub
         </a>
-  <nav>
+
+        <nav className="flex gap-1">
           <a href="/" className="text-primary-light hover:text-primary-lightest px-3 py-2">Inicio</a>
           <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Servicios</a>
           <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Acerca de</a>
-          {/* Mostrar enlace al Dashboard solo para admins. */}
           {showAdmin && (
             <a href="/dashboard" className="text-primary-light hover:text-primary-lightest px-3 py-2">Dashboard</a>
           )}
         </nav>
-        
-        <CartIcon />
-        
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-3 ml-auto">
+          <CartIcon />
+
           {isAuthenticated ? (
             <>
               <span className="text-primary-light flex items-center gap-2">
@@ -121,14 +119,14 @@ export default function Header() {
             </>
           ) : (
             <>
-              <a 
-                href="/login" 
+              <a
+                href="/login"
                 className="text-primary-light hover:text-primary-lightest px-3 py-2"
               >
                 Iniciar Sesión
               </a>
-              <a 
-                href="/registro" 
+              <a
+                href="/registro"
                 className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
               >
                 Registrarse
