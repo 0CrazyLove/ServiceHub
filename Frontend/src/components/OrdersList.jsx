@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { getOrders } from '../../Services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
-// toasts are now global via ToastContext
+import { useToast } from '../contexts/ToastContext.jsx';
 
 export default function OrdersList() {
   const { token, isAuthenticated, mounted } = useAuth();
+  const { push } = useToast(); // Usar el contexto correctamente
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     if (!mounted) return;
+    
     if (!isAuthenticated) {
       setLoading(false);
       setError('Inicia sesión para ver tus órdenes.');
@@ -26,21 +27,20 @@ export default function OrdersList() {
       } catch (err) {
         console.error(err);
         setError('No fue posible obtener tus órdenes. Intenta más tarde.');
-        setToast({ message: 'Error al cargar órdenes', type: 'error' });
+        push('Error al cargar órdenes', 'error'); // Usar push del contexto
       } finally {
         setLoading(false);
       }
     };
-
+    
     load();
-  }, [token, isAuthenticated, mounted]);
+  }, [token, isAuthenticated, mounted, push]);
 
   if (loading) return <div className="p-6">Cargando órdenes...</div>;
   if (error) return <div className="p-6 text-red-400">{error}</div>;
 
   return (
     <div className="mt-8">
-      <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
       <h3 className="text-xl font-semibold text-primary-lightest mb-4">Tus órdenes</h3>
       {orders.length === 0 ? (
         <div className="text-primary-light">Aún no tienes órdenes.</div>
@@ -55,7 +55,6 @@ export default function OrdersList() {
                 </div>
                 <div className="text-primary-accent font-semibold">${Number(o.totalAmount).toFixed(2)}</div>
               </div>
-
               <div className="mt-3 text-primary-light text-sm">
                 <ul className="space-y-1">
                   {o.orderItems.map((it) => (
@@ -70,4 +69,3 @@ export default function OrdersList() {
     </div>
   );
 }
-

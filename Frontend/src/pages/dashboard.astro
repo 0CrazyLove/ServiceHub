@@ -1,14 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.jsx';
-import DashboardCmp from '../components/Dashboard.jsx';
-import Footer from '../components/Footer.jsx';
+import DashboardPage from '../components/DashboardPage.jsx';
 ---
-
 <Layout>
-  <Header client:load />
-  <main class="bg-primary-darkest min-h-screen">
-  <DashboardCmp client:load />
-  </main>
-  <Footer client:load />
+  <DashboardPage client:load />
 </Layout>
