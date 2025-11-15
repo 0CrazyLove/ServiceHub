@@ -248,9 +248,6 @@ export default function ServiceDetails({ serviceId }) {
         onClose={() => setOrderModalOpen(false)}
         footer={
           <div className="flex justify-between gap-3">
-            <a href="/dashboard" className="px-4 py-2 bg-primary-dark border border-primary-medium text-primary-light rounded hover:bg-primary-darkest">
-              Ir al Dashboard
-            </a>
             <button onClick={() => setOrderModalOpen(false)} className="px-4 py-2 bg-primary-accent text-white rounded hover:bg-opacity-80">
               Cerrar
             </button>
