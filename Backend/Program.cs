@@ -9,6 +9,7 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
 Env.Load();
 
 // Configure DbContext
@@ -58,12 +59,15 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
     .AddPolicy("CustomerPolicy", policy => policy.RequireRole("Customer"));
 
-// ✨ CONFIGURAR CORS - NUEVO
+// ✨ CONFIGURAR CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4321").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+        policy.WithOrigins("http://localhost:4321")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -101,6 +105,7 @@ async static Task SeedAdminUser(IServiceProvider serviceProvider)
 
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
+
     if (!await roleManager.RoleExistsAsync("Customer"))
         await roleManager.CreateAsync(new IdentityRole("Customer"));
 
