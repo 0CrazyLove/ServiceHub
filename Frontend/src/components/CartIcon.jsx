@@ -63,9 +63,9 @@ export default function CartIcon() {
     <a
       href="/checkout"
       className="relative text-primary-light hover:text-primary-lightest px-3 py-2 flex items-center gap-1"
-      aria-label="Shopping cart"
+      aria-label="Carrito de compras"
     >
-      🛒 Cart
+      🛒 Carrito
       {cartCount > 0 && (
         <span className="ml-2 bg-primary-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
           {cartCount}

@@ -109,7 +109,7 @@ export default function Checkout() {
       window.location.href = '/dashboard';
     } catch (err) {
       console.error(err);
-      alert('Error creating order. Please try again.');
+      alert('Error al crear la orden. Por favor intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function Checkout() {
   if (!mounted) {
     return (
       <div className="p-6 text-center text-primary-light">
-        Loading cart...
+        Cargando carrito...
       </div>
     );
   }
@@ -129,10 +129,10 @@ export default function Checkout() {
   return (
     <div className="bg-primary-dark rounded-lg p-6">
       <h2 className="text-2xl font-semibold text-primary-lightest mb-4">
-        Cart
+        Carrito
       </h2>
       {items.length === 0 ? (
-        <div className="text-primary-light">Your cart is empty.</div>
+        <div className="text-primary-light">Tu carrito está vacío.</div>
       ) : (
         <div className="space-y-4">
           {items.map((it) => (
@@ -169,7 +169,7 @@ export default function Checkout() {
                     onClick={() => handleRemove(it.id)}
                     className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
                   >
-                    Remove
+                    Eliminar
                   </button>
                 </div>
               </div>
@@ -192,14 +192,14 @@ export default function Checkout() {
                 onClick={handleClear}
                 className="px-4 py-2 bg-primary-darkest border border-primary-medium rounded text-primary-light hover:bg-primary-medium"
               >
-                Clear
+                Vaciar
               </button>
               <button
                 onClick={handleCheckout}
                 disabled={loading}
                 className="px-4 py-2 bg-primary-accent text-white rounded hover:bg-opacity-80 disabled:opacity-50"
               >
-                {loading ? 'Processing...' : 'Checkout'}
+                {loading ? 'Procesando...' : 'Pagar'}
               </button>
             </div>
           </div>

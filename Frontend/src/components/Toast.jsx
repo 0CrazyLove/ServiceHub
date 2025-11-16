@@ -47,7 +47,7 @@ export default function Toast({ message, type = 'info', onClose, duration = 4000
         <button
           onClick={onClose}
           className="opacity-80 hover:opacity-100"
-          aria-label="Dismiss notification"
+          aria-label="Descartar notificación"
         >
           ✕
         </button>

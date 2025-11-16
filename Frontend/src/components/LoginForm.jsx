@@ -41,14 +41,14 @@ export default function LoginForm() {
         window.location.href = '/';
       }, 500);
     } catch (err) {
-      let errorMessage = 'Error logging in';
+  let errorMessage = 'Error al iniciar sesión';
       
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        errorMessage = 'Invalid email or password. Please try again.';
+  errorMessage = 'Correo o contraseña inválidos. Intenta de nuevo.';
       } else if (err.message.includes('400') || err.message.includes('Bad Request')) {
-        errorMessage = 'Please verify your information.';
+  errorMessage = 'Verifica tu información.';
       } else if (err.message.includes('500')) {
-        errorMessage = 'Server error. Please try again later.';
+  errorMessage = 'Error del servidor. Intenta nuevamente más tarde.';
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -81,14 +81,14 @@ export default function LoginForm() {
         }, 500);
       } catch (err) {
         console.error('Google login error:', err);
-        setError('Error logging in with Google. Please try again.');
+  setError('Error al iniciar sesión con Google. Por favor intenta nuevamente.');
       } finally {
         setLoading(false);
       }
     },
     onError: (error) => {
       console.error('Google OAuth error:', error);
-      setError('Error connecting to Google. Please try again.');
+  setError('Error al conectar con Google. Por favor intenta nuevamente.');
     },
     scope: 'openid email profile'
   });
@@ -97,7 +97,7 @@ export default function LoginForm() {
     <div className="w-full max-w-md mx-auto">
       <div className="bg-primary-dark rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">
-          Login
+          Iniciar sesión
         </h2>
         
         {/* Error message display */}
@@ -109,11 +109,11 @@ export default function LoginForm() {
 
         {/* Google OAuth button */}
         <div className="mb-6">
-          <button
-            onClick={() => googleLogin()}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 rounded-md border border-gray-300 transition disabled:opacity-50"
-          >
+            <button
+              onClick={() => googleLogin()}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 rounded-md border border-gray-300 transition disabled:opacity-50"
+            >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -132,18 +132,18 @@ export default function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            Continuar con Google
           </button>
         </div>
 
         {/* Divider */}
-        <div className="relative mb-6">
+            <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-primary-accent"></div>
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-4 bg-primary-dark text-primary-light">
-              Or continue with email
+              O continuar con correo
             </span>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function LoginForm() {
               htmlFor="email"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Email
+              Correo electrónico
             </label>
             <input
               type="email"
@@ -172,7 +172,7 @@ export default function LoginForm() {
               htmlFor="password"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Password
+              Contraseña
             </label>
             <div className="relative">
               <input
@@ -187,7 +187,7 @@ export default function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-light hover:text-primary-lightest transition"
-                title={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -217,28 +217,28 @@ export default function LoginForm() {
             disabled={loading}
             className="w-full bg-primary-accent hover:bg-opacity-80 disabled:opacity-50 text-primary-lightest font-bold py-2 px-4 rounded-md transition"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
         {/* Sign up link */}
         <p className="text-primary-light text-center mt-6">
-          Don't have an account?{' '}
+          ¿No tienes una cuenta?{' '}
           <a href="/registro" className="text-primary-accent hover:text-primary-lightest font-bold">
-            Sign up here
+            Regístrate aquí
           </a>
         </p>
 
         {/* Demo credentials */}
         <div className="mt-6 pt-6 border-t border-primary-accent">
           <p className="text-primary-light text-sm text-center mb-2">
-            Test credentials:
+            Credenciales de prueba:
           </p>
           <p className="text-primary-light text-xs text-center">
             Email: <code className="bg-primary-medium px-2 py-1 rounded">admin@example.com</code>
           </p>
           <p className="text-primary-light text-xs text-center">
-            Password: <code className="bg-primary-medium px-2 py-1 rounded">Admin123!</code>
+            Contraseña: <code className="bg-primary-medium px-2 py-1 rounded">Admin123!</code>
           </p>
         </div>
       </div>

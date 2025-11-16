@@ -11,15 +11,15 @@ import React from 'react';
  */
 
 const services = [
-  { name: 'Web Development', description: 'Create your professional website.' },
-  { name: 'Graphic Design', description: 'Logos, banners and more.' },
-  { name: 'Digital Marketing', description: 'Reach more clients.' },
+  { name: 'Desarrollo web', description: 'Crea tu sitio profesional.' },
+  { name: 'Diseño gráfico', description: 'Logotipos, banners y más.' },
+  { name: 'Marketing digital', description: 'Llega a más clientes.' },
   {
-    name: 'Writing and Translation',
-    description: 'Quality content.'
+    name: 'Redacción y traducción',
+    description: 'Contenido de calidad.'
   },
-  { name: 'Video and Motion Graphics', description: 'Impactful videos.' },
-  { name: 'Music and Audio', description: 'Professional audio production.' }
+  { name: 'Video y gráficos en movimiento', description: 'Videos impactantes.' },
+  { name: 'Música y audio', description: 'Producción de audio profesional.' }
 ];
 
 export default function Services() {
@@ -27,7 +27,7 @@ export default function Services() {
     <section className="py-20 bg-primary-darkest">
       <div className="container mx-auto px-4">
         <h3 className="text-3xl font-bold text-center text-primary-lightest mb-12">
-          Service Categories
+          Categorías de servicios
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (

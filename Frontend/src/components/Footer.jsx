@@ -18,42 +18,42 @@ export default function Footer() {
           <div className="text-center">
             <h4 className="font-bold mb-2">ServiceHub</h4>
             <p className="text-sm">
-              &copy; 2025 ServiceHub. All rights reserved.
+              &copy; 2025 ServiceHub. Todos los derechos reservados.
             </p>
           </div>
           {/* Navigation links section */}
           <div className="text-center">
-            <h4 className="font-bold mb-2">Navigation</h4>
+            <h4 className="font-bold mb-2">Navegación</h4>
             <ul>
               <li>
                 <a href="#" className="hover:text-primary-accent">
-                  Services
+                  Servicios
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary-accent">
-                  About
+                  Acerca de
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary-accent">
-                  Contact
+                  Contacto
                 </a>
               </li>
             </ul>
           </div>
           {/* Legal links section */}
           <div className="text-center">
-            <h4 className="font-bold mb-2">Legal</h4>
+            <h4 className="font-bold mb-2">Avisos legales</h4>
             <ul>
               <li>
                 <a href="#" className="hover:text-primary-accent">
-                  Terms and Conditions
+                  Términos y condiciones
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary-accent">
-                  Privacy Policy
+                  Política de privacidad
                 </a>
               </li>
             </ul>

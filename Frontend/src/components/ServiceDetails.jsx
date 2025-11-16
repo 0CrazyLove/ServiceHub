@@ -48,7 +48,7 @@ export default function ServiceDetails({ serviceId }) {
         setService(data);
       } catch (err) {
         console.error(err);
-        setError('Could not load service. Please try again.');
+    setError('No se pudo cargar el servicio. Por favor intenta de nuevo.');
       } finally {
         setLoading(false);
       }
@@ -97,7 +97,7 @@ export default function ServiceDetails({ serviceId }) {
       
       // Check if already in cart
       if (items.find((p) => p.id === service.id)) {
-        alert('Service already in cart');
+        alert('El servicio ya está en el carrito');
         return;
       }
       
@@ -115,7 +115,7 @@ export default function ServiceDetails({ serviceId }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
       
       // Show success and navigate to home
-      alert('Service added to cart');
+  alert('Servicio añadido al carrito');
       
       // Dispatch storage event for CartIcon to update
       window.dispatchEvent(new Event('storage'));
@@ -126,12 +126,12 @@ export default function ServiceDetails({ serviceId }) {
       }, 1000);
     } catch (e) {
       console.error('Error adding to cart:', e);
-      alert('Error adding to cart');
+  alert('Error al añadir al carrito');
     }
   };
 
   if (loading)
-    return <div className="p-6 text-center">Loading service...</div>;
+    return <div className="p-6 text-center">Cargando servicio...</div>;
   if (error) return <div className="p-6 text-red-400">{error}</div>;
   if (!service) return null;
 
@@ -162,10 +162,10 @@ export default function ServiceDetails({ serviceId }) {
                 {service.name}
               </h1>
               <p className="text-primary-accent text-lg font-semibold">
-                by {service.provider}
+                por {service.provider}
               </p>
               {service.verified && (
-                <p className="text-blue-400 text-sm mt-2">✓ Verified</p>
+                <p className="text-blue-400 text-sm mt-2">✓ Verificado</p>
               )}
             </div>
 
@@ -188,7 +188,7 @@ export default function ServiceDetails({ serviceId }) {
 
             {/* Pricing */}
             <div className="border-t border-primary-medium pt-4">
-              <div className="text-sm text-primary-light mb-1">Price</div>
+              <div className="text-sm text-primary-light mb-1">Precio</div>
               <div className="text-3xl font-bold text-primary-accent">
                 ${Number(service.price).toFixed(2)}
                 <span className="text-lg text-primary-light">
@@ -200,8 +200,8 @@ export default function ServiceDetails({ serviceId }) {
             {/* Details */}
             <div className="border-t border-primary-medium pt-4 space-y-2">
               <div>
-                <span className="text-primary-light text-sm">
-                  Delivery Time:
+                  <span className="text-primary-light text-sm">
+                  Tiempo de entrega:
                 </span>
                 <p className="text-primary-lightest font-semibold">
                   {service.deliveryTime}
@@ -209,7 +209,7 @@ export default function ServiceDetails({ serviceId }) {
               </div>
               {service.languages?.length > 0 && (
                 <div>
-                  <span className="text-primary-light text-sm">Languages:</span>
+                  <span className="text-primary-light text-sm">Idiomas:</span>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {service.languages.map((lang) => (
                       <span
@@ -243,10 +243,10 @@ export default function ServiceDetails({ serviceId }) {
                 }`}
               >
                 {submitting
-                  ? 'Processing...'
+                  ? 'Procesando...'
                   : service.available
-                    ? 'Request Service'
-                    : 'Not available'}
+                    ? 'Solicitar servicio'
+                    : 'No disponible'}
               </button>
 
               <button
@@ -254,7 +254,7 @@ export default function ServiceDetails({ serviceId }) {
                 disabled={!service.available}
                 className="w-full py-3 rounded-md font-semibold bg-primary-darkest border-2 border-primary-accent text-primary-accent hover:bg-primary-dark transition-all"
               >
-                Add to Cart
+                Añadir al carrito
               </button>
             </div>
           </div>
@@ -312,7 +312,7 @@ export default function ServiceDetails({ serviceId }) {
       {/* Order Confirmation Modal */}
       <Modal
         open={orderModalOpen}
-        title="Request Sent"
+        title="Solicitud enviada"
         onClose={() => setOrderModalOpen(false)}
         footer={
           <div className="flex justify-between gap-3">
@@ -320,7 +320,7 @@ export default function ServiceDetails({ serviceId }) {
               onClick={() => setOrderModalOpen(false)}
               className="px-4 py-2 bg-primary-accent text-white rounded hover:bg-opacity-80"
             >
-              Close
+              Cerrar
             </button>
           </div>
         }
@@ -328,14 +328,14 @@ export default function ServiceDetails({ serviceId }) {
         {createdOrder ? (
           <div className="space-y-4">
             <div className="bg-primary-darkest p-4 rounded">
-              <p className="text-sm text-primary-light">Order ID</p>
+              <p className="text-sm text-primary-light">ID de orden</p>
               <p className="text-2xl font-bold text-primary-accent">
                 #{createdOrder.id}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-primary-light">Date</p>
+                <p className="text-primary-light">Fecha</p>
                 <p className="text-primary-lightest font-semibold">
                   {new Date(createdOrder.orderDate).toLocaleString()}
                 </p>
@@ -349,7 +349,7 @@ export default function ServiceDetails({ serviceId }) {
             </div>
             <div className="border-t border-primary-medium pt-4">
               <p className="font-semibold text-primary-lightest mb-2">
-                Requested Services
+                Servicios solicitados
               </p>
               <ul className="space-y-2">
                 {createdOrder.orderItems.map((it) => (
@@ -364,7 +364,7 @@ export default function ServiceDetails({ serviceId }) {
             </div>
           </div>
         ) : (
-          <div className="text-primary-light">No details available.</div>
+          <div className="text-primary-light">No hay detalles disponibles.</div>
         )}
       </Modal>
     </div>

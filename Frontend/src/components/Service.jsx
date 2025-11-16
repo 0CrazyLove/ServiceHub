@@ -55,7 +55,7 @@ export default function Services() {
       }
     } catch (err) {
       setError(
-        'Error loading services. Please try again.'
+        'Error al cargar los servicios. Por favor intenta de nuevo.'
       );
       console.error(err);
     } finally {
@@ -64,13 +64,13 @@ export default function Services() {
   };
 
   const categories = [
-    'All',
-    'Web Development',
-    'Graphic Design',
-    'Digital Marketing',
-    'Writing and Translation',
-    'Video and Motion Graphics',
-    'Music and Audio'
+    'Todas',
+    'Desarrollo web',
+    'Diseño gráfico',
+    'Marketing digital',
+    'Redacción y traducción',
+    'Video y gráficos en movimiento',
+    'Música y audio'
   ];
 
   /**
@@ -153,10 +153,10 @@ export default function Services() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-primary-lightest mb-4">
-            Professional Services
+            Servicios profesionales
           </h2>
           <p className="text-primary-light max-w-xl mx-auto">
-            Find experts to take your project to the next level
+            Encuentra expertos que lleven tu proyecto al siguiente nivel
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export default function Services() {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            All prices
+            Todos los precios
           </button>
           <button
             onClick={() => handlePriceFilter({ min: null, max: 100 })}
@@ -198,7 +198,7 @@ export default function Services() {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            Less than $100
+            Menos de $100
           </button>
           <button
             onClick={() => handlePriceFilter({ min: 100, max: 300 })}
@@ -218,14 +218,14 @@ export default function Services() {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            More than $300
+            Más de $300
           </button>
         </div>
 
         {/* Empty state */}
         {services.length === 0 ? (
           <div className="text-center py-16 text-primary-light text-lg">
-            No services available with selected filters
+            No hay servicios disponibles con los filtros seleccionados
           </div>
         ) : (
           /* Services grid */
@@ -244,16 +244,16 @@ export default function Services() {
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-primary-accent">
-                      No image
+                      <div className="w-full h-full flex items-center justify-center text-primary-accent">
+                      Sin imagen
                     </div>
                   )}
                   {/* Verified badge */}
-                  {service.verified && (
-                    <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                      ✓ Verified
-                    </span>
-                  )}
+                      {service.verified && (
+                        <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                          ✓ Verificado
+                        </span>
+                      )}
                   {/* Availability badge */}
                   {!service.available && (
                     <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
@@ -268,9 +268,9 @@ export default function Services() {
                     <h3 className="text-lg font-semibold text-primary-lightest mb-1">
                       {service.name}
                     </h3>
-                    <p className="text-primary-accent text-sm font-medium">
-                      by {service.provider}
-                    </p>
+                      <p className="text-primary-accent text-sm font-medium">
+                        por {service.provider}
+                      </p>
                   </div>
 
                   <p className="text-primary-light text-sm mb-4 line-clamp-2 flex-grow">
@@ -281,7 +281,7 @@ export default function Services() {
                   <div className="mb-3">
                     {renderStars(service.rating)}
                     <p className="text-primary-light text-xs mt-1">
-                      {service.reviewCount} reviews • {service.completedJobs} jobs
+                      {service.reviewCount} reseñas • {service.completedJobs} trabajos
                     </p>
                   </div>
 
@@ -296,7 +296,7 @@ export default function Services() {
                       </span>
                     </div>
                     <div className="text-right">
-                      <p className="text-primary-light text-xs">Delivery:</p>
+                      <p className="text-primary-light text-xs">Entrega:</p>
                       <p className="text-primary-lightest text-sm font-medium">
                         {service.deliveryTime}
                       </p>
@@ -334,7 +334,7 @@ export default function Services() {
                     }`}
                     aria-disabled={!service.available}
                   >
-                    {service.available ? 'View details' : 'Not available'}
+                    {service.available ? 'Ver detalles' : 'No disponible'}
                   </a>
                 </div>
               </div>
@@ -350,11 +350,11 @@ export default function Services() {
               disabled={currentPage === 1}
               className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
             >
-              Previous
+              Anterior
             </button>
 
             <span className="text-primary-light">
-              Page {currentPage} of {totalPages}
+              Página {currentPage} de {totalPages}
             </span>
 
             <button
@@ -364,7 +364,7 @@ export default function Services() {
               disabled={currentPage === totalPages}
               className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
             >
-              Next
+              Siguiente
             </button>
           </div>
         )}

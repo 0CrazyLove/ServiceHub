@@ -31,7 +31,7 @@ export default function OrdersList() {
     
     if (!isAuthenticated) {
       setLoading(false);
-      setError('Login to view your orders.');
+      setError('Inicia sesión para ver tus órdenes.');
       return;
     }
 
@@ -42,8 +42,8 @@ export default function OrdersList() {
         setOrders(data);
       } catch (err) {
         console.error(err);
-        setError('Could not retrieve your orders. Please try later.');
-        push('Error loading orders', 'error');
+        setError('No se pudieron recuperar tus órdenes. Intenta más tarde.');
+        push('Error al cargar órdenes', 'error');
       } finally {
         setLoading(false);
       }
@@ -53,17 +53,17 @@ export default function OrdersList() {
   }, [token, isAuthenticated, mounted, push]);
 
   if (loading)
-    return <div className="p-6 text-primary-light">Loading orders...</div>;
+    return <div className="p-6 text-primary-light">Cargando órdenes...</div>;
   if (error) return <div className="p-6 text-red-400">{error}</div>;
 
   return (
     <div className="mt-8">
       <h3 className="text-xl font-semibold text-primary-lightest mb-4">
-        Your Orders
+        Tus órdenes
       </h3>
       {orders.length === 0 ? (
         <div className="text-primary-light">
-          You don't have any orders yet.
+          Aún no tienes órdenes.
         </div>
       ) : (
         <div className="space-y-4">

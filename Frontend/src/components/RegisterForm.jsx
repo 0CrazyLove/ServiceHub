@@ -51,13 +51,13 @@ export default function RegisterForm() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -75,15 +75,15 @@ export default function RegisterForm() {
       }, 500);
     } catch (err) {
       // Custom error handling
-      let errorMessage = 'Error during registration';
+  let errorMessage = 'Error durante el registro';
       
       if (err.message.includes('400') || err.message.includes('Bad Request')) {
         errorMessage =
-          'Verify that the email is not registered and that the data is valid.';
+          'Verifica que el correo no esté registrado y que los datos sean válidos.';
       } else if (err.message.includes('409') || err.message.includes('Conflict')) {
-        errorMessage = 'This email is already registered. Try another one.';
+  errorMessage = 'Este correo ya está registrado. Prueba con otro.';
       } else if (err.message.includes('500')) {
-        errorMessage = 'Server error. Please try again later.';
+  errorMessage = 'Error del servidor. Intenta nuevamente más tarde.';
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -128,7 +128,7 @@ export default function RegisterForm() {
     <div className="w-full max-w-md mx-auto">
       <div className="bg-primary-dark rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">
-          Create Account
+          Crear cuenta
         </h2>
         
         {/* Error message display */}
@@ -145,7 +145,7 @@ export default function RegisterForm() {
               htmlFor="userName"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Username
+              Usuario
             </label>
             <input
               type="text"
@@ -163,7 +163,7 @@ export default function RegisterForm() {
               htmlFor="email"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Email
+              Correo electrónico
             </label>
             <input
               type="email"
@@ -181,7 +181,7 @@ export default function RegisterForm() {
               htmlFor="password"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Password
+              Contraseña
             </label>
             <div className="relative">
               <input
@@ -203,7 +203,7 @@ export default function RegisterForm() {
               </button>
             </div>
             <p className="text-primary-light text-xs mt-1">
-              Minimum 6 characters, 1 uppercase, 1 lowercase and 1 number
+              Mínimo 6 caracteres, 1 mayúscula, 1 minúscula y 1 número
             </p>
           </div>
 
@@ -212,7 +212,7 @@ export default function RegisterForm() {
               htmlFor="confirmPassword"
               className="block text-primary-light text-sm font-medium mb-2"
             >
-              Confirm Password
+              Confirmar contraseña
             </label>
             <div className="relative">
               <input
@@ -242,15 +242,15 @@ export default function RegisterForm() {
             disabled={loading}
             className="w-full bg-primary-accent hover:bg-opacity-80 disabled:opacity-50 text-primary-lightest font-bold py-2 px-4 rounded-md transition"
           >
-            {loading ? 'Registering...' : 'Create Account'}
+            {loading ? 'Registrando...' : 'Crear cuenta'}
           </button>
         </form>
 
         {/* Login link */}
         <p className="text-primary-light text-center mt-6">
-          Already have an account?{' '}
+          ¿Ya tienes una cuenta?{' '}
           <a href="/login" className="text-primary-accent hover:text-primary-lightest font-bold">
-            Login here
+            Inicia sesión aquí
           </a>
         </p>
       </div>

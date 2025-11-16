@@ -30,7 +30,7 @@ export default function Dashboard() {
 
     const load = async () => {
       if (!isAuthenticated) {
-        setError('You must login with an admin account to view the dashboard.');
+        setError('Debes iniciar sesión con una cuenta de administrador para ver el panel.');
         setLoading(false);
         return;
       }
@@ -42,7 +42,7 @@ export default function Dashboard() {
         setStats(data);
       } catch (err) {
         console.error(err);
-        setError('Could not load statistics. Verify your session has admin permissions.');
+        setError('No se pudieron cargar las estadísticas. Comprueba que tu sesión tenga permisos de administrador.');
       } finally {
         setLoading(false);
       }
@@ -67,7 +67,7 @@ export default function Dashboard() {
         </div>
         <div className="mt-4">
           <a href="/login" className="text-primary-accent underline">
-            Go to login
+            Ir a iniciar sesión
           </a>
         </div>
       </div>
@@ -81,27 +81,27 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-12">
       <h2 className="text-3xl font-bold text-primary-lightest mb-6">
-        Dashboard
-      </h2>
+            Panel
+          </h2>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-primary-dark rounded-lg p-6 shadow-md border border-primary-medium">
-          <p className="text-sm text-primary-light">Total Sales</p>
+          <p className="text-sm text-primary-light">Ventas totales</p>
           <p className="text-2xl font-semibold text-primary-accent mt-2">
             ${Number(totalSales).toFixed(2)}
           </p>
         </div>
 
         <div className="bg-primary-dark rounded-lg p-6 shadow-md border border-primary-medium">
-          <p className="text-sm text-primary-light">Services</p>
+          <p className="text-sm text-primary-light">Servicios</p>
           <p className="text-2xl font-semibold text-primary-accent mt-2">
             {serviceCount}
           </p>
         </div>
 
         <div className="bg-primary-dark rounded-lg p-6 shadow-md border border-primary-medium">
-          <p className="text-sm text-primary-light">Orders</p>
+          <p className="text-sm text-primary-light">Órdenes</p>
           <p className="text-2xl font-semibold text-primary-accent mt-2">
             {orderCount}
           </p>

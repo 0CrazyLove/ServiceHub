@@ -14,20 +14,20 @@ export default function Hero() {
     <section className="bg-primary-darkest text-primary-lightest">
       <div className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-4xl font-bold mb-4">
-          Find the best services
+          Encuentra los mejores servicios
         </h2>
         <p className="text-lg mb-8">
-          Connecting professionals with clients worldwide
+          Conectando profesionales con clientes en todo el mundo
         </p>
         <div className="flex justify-center">
           <input
             type="text"
-            placeholder="What service are you looking for?"
+            placeholder="¿Qué servicio estás buscando?"
             className="w-1/2 px-4 py-2 rounded-l-md bg-primary-dark text-primary-lightest border border-primary-medium focus:outline-none focus:border-primary-accent"
-            aria-label="Search services"
+            aria-label="Buscar servicios"
           />
           <button className="bg-primary-accent hover:bg-opacity-80 text-white px-6 py-2 rounded-r-md font-semibold">
-            Search
+            Buscar
           </button>
         </div>
       </div>

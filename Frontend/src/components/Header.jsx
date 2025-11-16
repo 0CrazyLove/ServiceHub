@@ -106,7 +106,7 @@ export default function Header() {
       user?.username ||
       user?.userName ||
       user?.email?.split('@')[0] ||
-      'User'
+      'Usuario'
     );
   };
 
@@ -159,19 +159,19 @@ export default function Header() {
               href="/"
               className="text-primary-light hover:text-primary-lightest px-3 py-2"
             >
-              Home
+              Inicio
             </a>
             <a
               href="#"
               className="text-primary-light hover:text-primary-lightest px-3 py-2"
             >
-              Services
+              Servicios
             </a>
             <a
               href="#"
               className="text-primary-light hover:text-primary-lightest px-3 py-2"
             >
-              About
+              Acerca de
             </a>
           </nav>
           <div className="flex items-center gap-3 ml-auto">
@@ -203,26 +203,26 @@ export default function Header() {
             href="/"
             className="text-primary-light hover:text-primary-lightest px-3 py-2"
           >
-            Home
+            Inicio
           </a>
           <a
             href="#"
             className="text-primary-light hover:text-primary-lightest px-3 py-2"
           >
-            Services
+            Servicios
           </a>
           <a
             href="#"
             className="text-primary-light hover:text-primary-lightest px-3 py-2"
           >
-            About
+            Acerca de
           </a>
           {showAdmin && (
             <a
               href="/dashboard"
               className="text-primary-light hover:text-primary-lightest px-3 py-2"
             >
-              Dashboard
+              Panel
             </a>
           )}
         </nav>
@@ -285,7 +285,7 @@ export default function Header() {
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-3 text-primary-light hover:bg-primary-darker hover:text-primary-lightest transition flex items-center gap-2"
-                      aria-label="Logout"
+                      aria-label="Cerrar sesión"
                     >
                       <svg
                         className="w-5 h-5"
@@ -300,7 +300,7 @@ export default function Header() {
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                         />
                       </svg>
-                      Logout
+                      Cerrar sesión
                     </button>
                   </div>
                 </div>
@@ -312,13 +312,13 @@ export default function Header() {
                 href="/login"
                 className="text-primary-light hover:text-primary-lightest px-3 py-2"
               >
-                Login
+                Iniciar sesión
               </a>
               <a
                 href="/registro"
                 className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
               >
-                Register
+                Registrarse
               </a>
             </>
           )}
