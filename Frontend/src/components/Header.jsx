@@ -19,13 +19,13 @@ export default function Header() {
         const normalized = roles.map(r => String(r).toLowerCase());
         return normalized.includes('admin') || normalized.includes('administrator');
       }
-      
+
       const token = user?.token || user?.Token || null;
       if (token && typeof token === 'string') {
         const parts = token.split('.');
         if (parts.length === 3) {
           const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-          
+
           if (payload.role) {
             const r = Array.isArray(payload.role) ? payload.role : [payload.role];
             if (r.map(x => String(x).toLowerCase()).includes('admin')) return true;
@@ -34,7 +34,7 @@ export default function Header() {
             const r = Array.isArray(payload.roles) ? payload.roles : [payload.roles];
             if (r.map(x => String(x).toLowerCase()).includes('admin')) return true;
           }
-          
+
           const roleClaimKey = Object.keys(payload).find(k => k.toLowerCase().includes('/role'));
           if (roleClaimKey) {
             const val = payload[roleClaimKey];
@@ -54,6 +54,11 @@ export default function Header() {
     setShowAdmin(isUserAdmin());
   }, [mounted, user]);
 
+  // Obtener nombre a mostrar
+  const getDisplayName = () => {
+    return user?.displayName || user?.Username || user?.username || user?.userName || user?.email?.split('@')[0] || 'Usuario';
+  };
+
   // SKELETON con la MISMA estructura que el componente montado
   if (!mounted) {
     return (
@@ -68,23 +73,23 @@ export default function Header() {
             <a href="#" className="text-primary-light hover:text-primary-lightest px-3 py-2">Acerca de</a>
           </nav>
           <div className="flex items-center gap-3 ml-auto">
-            {/* Placeholder invisible para CartIcon */}
             <div className="w-6 h-6"></div>
-            <a
+            <a>
               href="/login"
               className="text-primary-light hover:text-primary-lightest px-3 py-2"
-            >
               Iniciar Sesión
             </a>
+
             <a
               href="/registro"
               className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
             >
               Registrarse
             </a>
+
           </div>
-        </div>
-      </header>
+        </div >
+      </header >
     );
   }
 
@@ -107,9 +112,24 @@ export default function Header() {
           <CartIcon />
           {isAuthenticated ? (
             <>
-              <span className="text-primary-light flex items-center gap-2">
-                <strong>{user?.Username || user?.username || user?.userName || user?.email}</strong>
-              </span>
+              <div className="flex items-center gap-2">
+                {/* Imagen de perfil */}
+                {user?.picture ? (
+                  <img
+                    src={user.picture}
+                    alt={getDisplayName()}
+                    className="w-8 h-8 rounded-full border-2 border-primary-accent object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary-accent flex items-center justify-center text-primary-lightest font-bold">
+                    {getDisplayName().charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-primary-light">
+                  <strong>{getDisplayName()}</strong>
+                </span>
+              </div>
               <button
                 onClick={handleLogout}
                 className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
@@ -119,12 +139,14 @@ export default function Header() {
             </>
           ) : (
             <>
+
               <a
                 href="/login"
                 className="text-primary-light hover:text-primary-lightest px-3 py-2"
               >
                 Iniciar Sesión
               </a>
+
               <a
                 href="/registro"
                 className="bg-primary-accent hover:bg-opacity-80 text-white px-4 py-2 rounded-md transition"
@@ -134,7 +156,7 @@ export default function Header() {
             </>
           )}
         </div>
-      </div>
-    </header>
+      </div >
+    </header >
   );
 }
