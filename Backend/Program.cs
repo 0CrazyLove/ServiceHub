@@ -73,6 +73,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IServicesService, ServicesService>();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
