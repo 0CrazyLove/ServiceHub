@@ -7,8 +7,20 @@ using System.Text.Json;
 
 namespace Backend.Services.Implementations;
 
+/// <summary>
+/// Implementation of service catalog management.
+/// 
+/// Handles service queries with filtering and pagination, CRUD operations,
+/// and category discovery. Manages JSON serialization for language storage.
+/// </summary>
 public class ServicesService(AppDbContext context) : IServicesService
 {
+    /// <summary>
+    /// Retrieve paginated services with optional filtering.
+    /// 
+    /// Applies filters in order: category, price range.
+    /// Results sorted by creation date (newest first).
+    /// </summary>
     public async Task<PaginatedServicesDto> GetServices(
         string? category, 
         int page, 
@@ -18,19 +30,19 @@ public class ServicesService(AppDbContext context) : IServicesService
     {
         var query = context.Services.AsQueryable();
         
-        // Filtro por categoría
+        // Apply category filter if specified
         if (!string.IsNullOrEmpty(category))
         {
             query = query.Where(s => s.Category == category);
         }
         
-        // Filtro por precio mínimo
+        // Apply minimum price filter if specified
         if (minPrice.HasValue)
         {
             query = query.Where(s => s.Price >= minPrice.Value);
         }
         
-        // Filtro por precio máximo
+        // Apply maximum price filter if specified
         if (maxPrice.HasValue)
         {
             query = query.Where(s => s.Price <= maxPrice.Value);
@@ -39,6 +51,7 @@ public class ServicesService(AppDbContext context) : IServicesService
         var totalCount = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
         
+        // Fetch the requested page, sorted by creation date descending
         var services = await query
             .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -56,13 +69,22 @@ public class ServicesService(AppDbContext context) : IServicesService
             TotalCount = totalCount
         };
     }
-    
+
+    /// <summary>
+    /// Retrieve a specific service by ID.
+    /// </summary>
     public async Task<ServiceResponseDto?> GetServiceById(int id)
     {
         var service = await context.Services.FindAsync(id);
         return service == null ? null : MapToResponseDto(service);
     }
-    
+
+    /// <summary>
+    /// Create a new service.
+    /// 
+    /// Serializes the language list to JSON format for storage.
+    /// Sets creation and update timestamps to current UTC time.
+    /// </summary>
     public async Task<ServiceResponseDto> CreateService(ServiceDto serviceDto)
     {
         var newService = new Service
@@ -90,7 +112,13 @@ public class ServicesService(AppDbContext context) : IServicesService
         
         return MapToResponseDto(newService);
     }
-    
+
+    /// <summary>
+    /// Update an existing service.
+    /// 
+    /// Updates all properties and sets UpdatedAt to current UTC time.
+    /// Returns null if service not found.
+    /// </summary>
     public async Task<ServiceResponseDto?> UpdateService(int id, ServiceDto serviceDto)
     {
         var service = await context.Services.FindAsync(id);
@@ -116,7 +144,13 @@ public class ServicesService(AppDbContext context) : IServicesService
         
         return MapToResponseDto(service);
     }
-    
+
+    /// <summary>
+    /// Delete a service.
+    /// 
+    /// Permanently removes the service from the catalog.
+    /// Returns false if service not found.
+    /// </summary>
     public async Task<bool> DeleteService(int id)
     {
         var service = await context.Services.FindAsync(id);
@@ -127,7 +161,12 @@ public class ServicesService(AppDbContext context) : IServicesService
         
         return true;
     }
-    
+
+    /// <summary>
+    /// Retrieve all available service categories.
+    /// 
+    /// Returns distinct, non-null categories sorted alphabetically.
+    /// </summary>
     public async Task<IEnumerable<string>> GetCategories()
     {
         return await context.Services
@@ -137,7 +176,13 @@ public class ServicesService(AppDbContext context) : IServicesService
             .OrderBy(c => c)
             .ToListAsync();
     }
-    
+
+    /// <summary>
+    /// Map Service entity to ServiceResponseDto.
+    /// 
+    /// Deserializes the JSON language string and handles any errors gracefully
+    /// by returning an empty list on deserialization failure.
+    /// </summary>
     private static ServiceResponseDto MapToResponseDto(Service service)
     {
         List<string> languages;
@@ -147,6 +192,7 @@ public class ServicesService(AppDbContext context) : IServicesService
         }
         catch
         {
+            // Handle JSON deserialization errors gracefully
             languages = new List<string>();
         }
         

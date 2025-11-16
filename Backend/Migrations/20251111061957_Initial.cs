@@ -5,6 +5,22 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Backend.Migrations
 {
+    /// <summary>
+    /// Initial database schema migration for ServiceHub platform.
+    /// 
+    /// Creates core application tables:
+    /// - Identity Framework tables: AspNetUsers, AspNetRoles, AspNetUserClaims, AspNetUserLogins,
+    ///   AspNetUserRoles, AspNetRoleClaims, AspNetUserTokens
+    /// - Services: Catalog of available services with pricing and metadata
+    /// - Orders: Customer orders and transaction records
+    /// - OrderItems: Line items within orders
+    /// 
+    /// This migration establishes the foundation for user management, authentication,
+    /// and the service marketplace functionality. All relationships include
+    /// appropriate cascading deletes and foreign key constraints.
+    /// 
+    /// Generated: 2025-11-11 06:19:57 UTC
+    /// </summary>
     /// <inheritdoc />
     public partial class Initial : Migration
     {
@@ -287,6 +303,12 @@ namespace Backend.Migrations
                 column: "UserId");
         }
 
+        /// <summary>
+        /// Revert the migration by dropping all created tables and relationships.
+        /// 
+        /// This operation removes all schema changes made by the Up() method in reverse order,
+        /// ensuring proper cleanup of foreign key constraints before table deletion.
+        /// </summary>
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

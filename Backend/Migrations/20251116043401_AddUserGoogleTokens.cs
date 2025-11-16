@@ -5,6 +5,24 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Backend.Migrations
 {
+    /// <summary>
+    /// Add UserGoogleTokens table for Google OAuth integration.
+    /// 
+    /// Creates the UserGoogleTokens table to securely store Google refresh tokens
+    /// for users authenticated via Google Sign-In. This enables the platform to:
+    /// - Maintain long-lived user sessions without re-authentication
+    /// - Perform background operations on behalf of authenticated users
+    /// - Support seamless OAuth integration
+    /// 
+    /// Table columns:
+    /// - Id: Primary key (auto-incrementing)
+    /// - UserId: Foreign reference to AspNetUsers.Id
+    /// - RefreshToken: OAuth refresh token value (encrypted in practice)
+    /// - ExpiresAt: UTC timestamp when token expires
+    /// - CreatedAt: UTC timestamp when record was created
+    /// 
+    /// Generated: 2025-11-16 04:34:01 UTC
+    /// </summary>
     /// <inheritdoc />
     public partial class AddUserGoogleTokens : Migration
     {
@@ -28,6 +46,12 @@ namespace Backend.Migrations
                 });
         }
 
+        /// <summary>
+        /// Revert the migration by removing the UserGoogleTokens table.
+        /// 
+        /// Dropping this table will remove all stored Google refresh tokens.
+        /// This is typically used when rolling back to a version without Google OAuth support.
+        /// </summary>
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

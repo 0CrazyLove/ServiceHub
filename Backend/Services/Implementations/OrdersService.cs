@@ -6,8 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services.Implementations;
 
+/// <summary>
+/// Implementation of order service for managing customer orders.
+/// 
+/// Handles order creation, retrieval, and transformation to DTOs.
+/// Ensures service availability validation and accurate pricing calculation.
+/// </summary>
 public class OrdersService(AppDbContext context) : IOrdersService
 {
+    /// <summary>
+    /// Retrieve all orders with related items and services.
+    /// 
+    /// Transforms Order entities to OrderResponseDto for API responses.
+    /// </summary>
     public async Task<IEnumerable<OrderResponseDto>> GetOrdersAsync()
     {
         var orders = await context.Orders
@@ -30,7 +41,10 @@ public class OrdersService(AppDbContext context) : IOrdersService
             }).ToList()
         }).ToList();
     }
-    
+
+    /// <summary>
+    /// Retrieve a specific order with all related items and services.
+    /// </summary>
     public async Task<Order?> GetOrderByIdAsync(int id)
     {
         return await context.Orders
@@ -38,10 +52,20 @@ public class OrdersService(AppDbContext context) : IOrdersService
             .ThenInclude(oi => oi.Service)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
-    
+
+    /// <summary>
+    /// Create a new order for the specified user.
+    /// 
+    /// Process:
+    /// 1. Fetch all requested services in a single query
+    /// 2. Validate that services exist and are available
+    /// 3. Create order items with current pricing
+    /// 4. Calculate total amount
+    /// 5. Persist to database
+    /// </summary>
     public async Task<OrderResponseDto> CreateOrderAsync(OrderDto orderDto, string userId)
     {
-        // Obtener todos los servicios de una vez
+        // Fetch all services in one query for efficiency
         var serviceIds = orderDto.OrderItems.Select(i => i.ServiceId).ToList();
         var services = await context.Services
             .Where(s => serviceIds.Contains(s.Id))
@@ -56,10 +80,11 @@ public class OrdersService(AppDbContext context) : IOrdersService
         
         decimal totalAmount = 0;
         
+        // Add order items, validating service availability
         foreach (var itemDto in orderDto.OrderItems)
         {
             if (services.TryGetValue(itemDto.ServiceId, out var service) &&
-                service.Available) // Verificar que el servicio esté disponible
+                service.Available)
             {
                 var orderItem = new OrderItem
                 {
@@ -77,7 +102,7 @@ public class OrdersService(AppDbContext context) : IOrdersService
         context.Orders.Add(newOrder);
         await context.SaveChangesAsync();
         
-        // Mapear la entidad Order a OrderResponseDto
+        // Transform to DTO for response
         var response = new OrderResponseDto
         {
             Id = newOrder.Id,
