@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { registerUser } from '../../Services/api';
 
+/**
+ * User registration form component.
+ * 
+ * Provides account creation with email, username, password validation.
+ * Includes password visibility toggle and strength requirements display.
+ * Validates password confirmation and minimum requirements.
+ * Handles registration errors and redirects on success.
+ * 
+ * @returns {JSX.Element} Registration form
+ */
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
     userName: '',
@@ -15,26 +25,39 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
+  /**
+   * Handle form input changes.
+   * 
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
+  /**
+   * Handle form submission and user registration.
+   * 
+   * Validates password strength and confirmation before submission.
+   * 
+   * @param {React.FormEvent} e - Form submission event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Validaciones
+    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError('Passwords do not match');
       return;
     }
 
+    // Validate password length
     if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError('Password must be at least 6 characters long');
       return;
     }
 
@@ -43,23 +66,24 @@ export default function RegisterForm() {
     try {
       const response = await registerUser(formData);
       
-      // Guardar token y datos del usuario
+      // Store token and user data
       login(response, response.token);
       
-      // Redirigir al usuario
+      // Redirect to home
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
     } catch (err) {
-      // Manejo personalizado de errores
-      let errorMessage = 'Error al registrarse';
+      // Custom error handling
+      let errorMessage = 'Error during registration';
       
       if (err.message.includes('400') || err.message.includes('Bad Request')) {
-        errorMessage = 'Verifica que el email no esté registrado y que los datos sean válidos.';
+        errorMessage =
+          'Verify that the email is not registered and that the data is valid.';
       } else if (err.message.includes('409') || err.message.includes('Conflict')) {
-        errorMessage = 'Este email ya está registrado. Intenta con otro.';
+        errorMessage = 'This email is already registered. Try another one.';
       } else if (err.message.includes('500')) {
-        errorMessage = 'Error del servidor. Intenta más tarde.';
+        errorMessage = 'Server error. Please try again later.';
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -70,17 +94,32 @@ export default function RegisterForm() {
     }
   };
 
-  // SVG para mostrar/ocultar contraseña
+  /**
+   * Eye icon component for password visibility toggle.
+   * @private
+   */
   const EyeIcon = () => (
     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
       <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 
+  /**
+   * Eye off icon component for password visibility toggle.
+   * @private
+   */
   const EyeOffIcon = () => (
     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
+        clipRule="evenodd"
+      />
       <path d="M15.171 13.576l1.414 1.414A10.025 10.025 0 0020 10c-1.274-4.057-5.064-7-9.542-7a9.971 9.971 0 00-3.516.635l1.414 1.414a6 6 0 018.644 8.527z" />
     </svg>
   );
@@ -88,18 +127,25 @@ export default function RegisterForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-primary-dark rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">Crear Cuenta</h2>
+        <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">
+          Create Account
+        </h2>
         
+        {/* Error message display */}
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-200 px-4 py-3 rounded-md mb-4">
             {error}
           </div>
         )}
 
+        {/* Registration form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="userName" className="block text-primary-light text-sm font-medium mb-2">
-              Nombre de Usuario
+            <label
+              htmlFor="userName"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
+              Username
             </label>
             <input
               type="text"
@@ -113,7 +159,10 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-primary-light text-sm font-medium mb-2">
+            <label
+              htmlFor="email"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
               Email
             </label>
             <input
@@ -128,8 +177,11 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-primary-light text-sm font-medium mb-2">
-              Contraseña
+            <label
+              htmlFor="password"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
+              Password
             </label>
             <div className="relative">
               <input
@@ -145,19 +197,22 @@ export default function RegisterForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-light hover:text-primary-lightest transition"
-                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeIcon /> : <EyeOffIcon />}
               </button>
             </div>
             <p className="text-primary-light text-xs mt-1">
-              Mínimo 6 caracteres, 1 mayúscula, 1 minúscula y 1 número
+              Minimum 6 characters, 1 uppercase, 1 lowercase and 1 number
             </p>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-primary-light text-sm font-medium mb-2">
-              Confirmar Contraseña
+            <label
+              htmlFor="confirmPassword"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
+              Confirm Password
             </label>
             <div className="relative">
               <input
@@ -173,7 +228,9 @@ export default function RegisterForm() {
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-light hover:text-primary-lightest transition"
-                title={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={
+                  showConfirmPassword ? 'Hide password' : 'Show password'
+                }
               >
                 {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
               </button>
@@ -185,14 +242,15 @@ export default function RegisterForm() {
             disabled={loading}
             className="w-full bg-primary-accent hover:bg-opacity-80 disabled:opacity-50 text-primary-lightest font-bold py-2 px-4 rounded-md transition"
           >
-            {loading ? 'Registrando...' : 'Crear Cuenta'}
+            {loading ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 
+        {/* Login link */}
         <p className="text-primary-light text-center mt-6">
-          ¿Ya tienes cuenta?{' '}
+          Already have an account?{' '}
           <a href="/login" className="text-primary-accent hover:text-primary-lightest font-bold">
-            Inicia sesión aquí
+            Login here
           </a>
         </p>
       </div>

@@ -1,15 +1,22 @@
 ---
-// No necesitamos Providers aquí si los manejamos por página
+/**
+ * Root layout component for all pages.
+ * 
+ * Provides the HTML structure, metadata, and styling foundation
+ * for the entire application. Wraps page content with consistent
+ * theming and responsive viewport settings.
+ */
 ---
+
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width" />
-  <link rel="icon" type="image/svg+xml" href="/Isometrical.ico" />
-  <meta name="generator" content={Astro.generator} />
-  <title>ServiceHub</title>
-</head>
-<body class="bg-primary-darkest text-primary-lightest">
-  <slot />
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/Isometrical.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>ServiceHub</title>
+  </head>
+  <body class="bg-primary-darkest text-primary-lightest">
+    <slot />
+  </body>
 </html>

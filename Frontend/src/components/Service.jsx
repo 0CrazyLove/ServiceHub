@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react';
 import { getServices } from '../../Services/api.js';
 
+/**
+ * Services catalog component with filtering and pagination.
+ * 
+ * Displays a grid of available services with filtering options:
+ * - Category filtering
+ * - Price range filtering
+ * - Pagination for browsing through results
+ * 
+ * Shows service details including ratings, reviews, pricing, and availability.
+ * Handles loading, error states, and empty results gracefully.
+ * 
+ * @returns {JSX.Element} Services grid with filters and pagination
+ */
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,71 +22,109 @@ export default function Services() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState({ min: null, max: null });
-  // kept simple: navigation to service details page handles purchases
 
-useEffect(() => {
-  loadServices();
-}, [currentPage, selectedCategory, priceRange]);
+  /**
+   * Load services on filter or page change.
+   */
+  useEffect(() => {
+    loadServices();
+  }, [currentPage, selectedCategory, priceRange]);
 
-const loadServices = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+  /**
+   * Fetch services from API with current filters and pagination.
+   * 
+   * @private
+   */
+  const loadServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const data = await getServices({
-      category: selectedCategory,
-      page: currentPage,
-      pageSize: 12,
-      minPrice: priceRange.min,
-      maxPrice: priceRange.max
-    });
+      const data = await getServices({
+        category: selectedCategory,
+        page: currentPage,
+        pageSize: 12,
+        minPrice: priceRange.min,
+        maxPrice: priceRange.max
+      });
 
-    setServices(data.items || data);
+      setServices(data.items || data);
 
-    if (data.totalPages) {
-      setTotalPages(data.totalPages);
+      if (data.totalPages) {
+        setTotalPages(data.totalPages);
+      }
+    } catch (err) {
+      setError(
+        'Error loading services. Please try again.'
+      );
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError('Error al cargar los servicios. Por favor intenta de nuevo.');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const categories = [
-    'Todos', 
-    'Desarrollo Web', 
-    'Diseño Gráfico', 
-    'Marketing Digital', 
-    'Redacción y Traducción', 
-    'Video y Motion Graphics', 
-    'Música y Audio'
+    'All',
+    'Web Development',
+    'Graphic Design',
+    'Digital Marketing',
+    'Writing and Translation',
+    'Video and Motion Graphics',
+    'Music and Audio'
   ];
 
+  /**
+   * Handle category filter change.
+   * Resets to page 1 when filter changes.
+   * 
+   * @param {string} category - Selected category name
+   * @private
+   */
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category === 'Todos' ? '' : category);
+    setSelectedCategory(category === 'All' ? '' : category);
     setCurrentPage(1);
   };
 
+  /**
+   * Handle price range filter change.
+   * Resets to page 1 when filter changes.
+   * 
+   * @param {Object} range - Price range object with min and max
+   * @private
+   */
   const handlePriceFilter = (range) => {
     setPriceRange(range);
     setCurrentPage(1);
   };
 
+  /**
+   * Render star rating display.
+   * 
+   * @param {number} rating - Rating value (0-5)
+   * @returns {JSX.Element} Star rating component
+   * @private
+   */
   const renderStars = (rating) => {
     return (
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
-          <span key={i} className={i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-600'}>
+          <span
+            key={i}
+            className={
+              i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-600'
+            }
+          >
             ★
           </span>
         ))}
-        <span className="text-primary-light text-sm ml-1">({rating.toFixed(1)})</span>
+        <span className="text-primary-light text-sm ml-1">
+          ({rating.toFixed(1)})
+        </span>
       </div>
     );
   };
 
+  // Loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-primary-darkest">
@@ -82,13 +133,14 @@ const loadServices = async () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8 bg-primary-darkest min-h-screen">
         <div className="bg-red-200 text-red-700 px-4 py-3 rounded-md shadow-md flex justify-between items-center">
           <span>{error}</span>
           <button onClick={loadServices} className="text-red-700 font-semibold underline">
-            Reintentar
+            Retry
           </button>
         </div>
       </div>
@@ -98,21 +150,25 @@ const loadServices = async () => {
   return (
     <div className="bg-primary-darkest min-h-screen">
       <div className="container mx-auto px-4 py-16">
+        {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-primary-lightest mb-4">Servicios Profesionales</h2>
+          <h2 className="text-4xl font-bold text-primary-lightest mb-4">
+            Professional Services
+          </h2>
           <p className="text-primary-light max-w-xl mx-auto">
-            Encuentra expertos para llevar tu proyecto al siguiente nivel
+            Find experts to take your project to the next level
           </p>
         </div>
 
-        {/* Filtros de Categoría */}
+        {/* Category filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-6">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm ${
-                (category === 'Todos' && !selectedCategory) || selectedCategory === category
+                (category === 'All' && !selectedCategory) ||
+                selectedCategory === category
                   ? 'bg-primary-accent text-white shadow-md'
                   : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
               }`}
@@ -122,7 +178,7 @@ const loadServices = async () => {
           ))}
         </div>
 
-        {/* Filtros de Precio */}
+        {/* Price filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           <button
             onClick={() => handlePriceFilter({ min: null, max: null })}
@@ -132,7 +188,7 @@ const loadServices = async () => {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            Todos los precios
+            All prices
           </button>
           <button
             onClick={() => handlePriceFilter({ min: null, max: 100 })}
@@ -142,7 +198,7 @@ const loadServices = async () => {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            Menos de $100
+            Less than $100
           </button>
           <button
             onClick={() => handlePriceFilter({ min: 100, max: 300 })}
@@ -162,21 +218,24 @@ const loadServices = async () => {
                 : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
             }`}
           >
-            Más de $300
+            More than $300
           </button>
         </div>
 
+        {/* Empty state */}
         {services.length === 0 ? (
           <div className="text-center py-16 text-primary-light text-lg">
-            No hay servicios disponibles con los filtros seleccionados
+            No services available with selected filters
           </div>
         ) : (
+          /* Services grid */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {services.map((service) => (
               <div
                 key={service.id}
                 className="bg-primary-dark rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-primary-medium flex flex-col"
               >
+                {/* Service image */}
                 <div className="h-48 bg-primary-darkest overflow-hidden relative">
                   {service.imageUrl ? (
                     <img
@@ -186,28 +245,31 @@ const loadServices = async () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-primary-accent">
-                      Sin imagen
+                      No image
                     </div>
                   )}
+                  {/* Verified badge */}
                   {service.verified && (
                     <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                      ✓ Verificado
+                      ✓ Verified
                     </span>
                   )}
+                  {/* Availability badge */}
                   {!service.available && (
                     <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                      Ocupado
+                      Busy
                     </span>
                   )}
                 </div>
 
+                {/* Service info */}
                 <div className="p-5 flex flex-col flex-grow">
                   <div className="mb-3">
                     <h3 className="text-lg font-semibold text-primary-lightest mb-1">
                       {service.name}
                     </h3>
                     <p className="text-primary-accent text-sm font-medium">
-                      por {service.provider}
+                      by {service.provider}
                     </p>
                   </div>
 
@@ -215,13 +277,15 @@ const loadServices = async () => {
                     {service.description}
                   </p>
 
+                  {/* Rating */}
                   <div className="mb-3">
                     {renderStars(service.rating)}
                     <p className="text-primary-light text-xs mt-1">
-                      {service.reviewCount} reseñas • {service.completedJobs} trabajos
+                      {service.reviewCount} reviews • {service.completedJobs} jobs
                     </p>
                   </div>
 
+                  {/* Price and delivery */}
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-medium">
                     <div>
                       <span className="text-2xl font-bold text-primary-accent">
@@ -232,13 +296,14 @@ const loadServices = async () => {
                       </span>
                     </div>
                     <div className="text-right">
-                      <p className="text-primary-light text-xs">Entrega:</p>
+                      <p className="text-primary-light text-xs">Delivery:</p>
                       <p className="text-primary-lightest text-sm font-medium">
                         {service.deliveryTime}
                       </p>
                     </div>
                   </div>
 
+                  {/* Languages */}
                   {service.languages && service.languages.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-4">
                       {service.languages.map((lang) => (
@@ -252,12 +317,14 @@ const loadServices = async () => {
                     </div>
                   )}
 
+                  {/* Category badge */}
                   {service.category && (
                     <span className="inline-block bg-primary-darkest text-primary-light text-xs px-3 py-1 rounded-full mb-4 border border-primary-medium">
                       {service.category}
                     </span>
                   )}
 
+                  {/* CTA button */}
                   <a
                     href={`/service/${service.id}`}
                     className={`w-full inline-block text-center py-2.5 rounded-md font-medium transition-all duration-200 ${
@@ -267,7 +334,7 @@ const loadServices = async () => {
                     }`}
                     aria-disabled={!service.available}
                   >
-                    {service.available ? 'Ver detalles' : 'No disponible'}
+                    {service.available ? 'View details' : 'Not available'}
                   </a>
                 </div>
               </div>
@@ -275,6 +342,7 @@ const loadServices = async () => {
           </div>
         )}
 
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-12">
             <button
@@ -282,19 +350,21 @@ const loadServices = async () => {
               disabled={currentPage === 1}
               className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
             >
-              Anterior
+              Previous
             </button>
 
             <span className="text-primary-light">
-              Página {currentPage} de {totalPages}
+              Page {currentPage} of {totalPages}
             </span>
 
             <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
               className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
             >
-              Siguiente
+              Next
             </button>
           </div>
         )}

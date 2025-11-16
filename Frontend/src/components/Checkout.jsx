@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import { createOrder } from '../../Services/api.js';
 
+/**
+ * Shopping cart checkout component.
+ * 
+ * Displays cart items from localStorage with options to:
+ * - Remove individual items
+ * - Clear entire cart
+ * - Complete checkout (creates order and clears cart)
+ * 
+ * Syncs with localStorage changes across tabs/windows.
+ * Requires authentication to complete checkout.
+ * 
+ * @returns {JSX.Element} Checkout cart display
+ */
 export default function Checkout() {
   const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState([]);
@@ -9,6 +22,9 @@ export default function Checkout() {
 
   const { token, isAuthenticated } = useAuth();
 
+  /**
+   * Load cart from localStorage and listen for changes.
+   */
   useEffect(() => {
     setMounted(true);
 
@@ -27,7 +43,7 @@ export default function Checkout() {
 
     loadCart();
 
-    // Listen to storage changes (from other tabs or windows)
+    // Listen to storage changes from other tabs or windows
     const handleStorageChange = () => {
       loadCart();
     };
@@ -36,6 +52,11 @@ export default function Checkout() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  /**
+   * Remove a single item from the cart.
+   * 
+   * @param {number} id - Service ID to remove
+   */
   const handleRemove = (id) => {
     try {
       const raw = localStorage.getItem('servicehub_cart_v1') || '[]';
@@ -48,6 +69,9 @@ export default function Checkout() {
     }
   };
 
+  /**
+   * Clear all items from the cart.
+   */
   const handleClear = () => {
     try {
       localStorage.setItem('servicehub_cart_v1', JSON.stringify([]));
@@ -57,6 +81,11 @@ export default function Checkout() {
     }
   };
 
+  /**
+   * Complete checkout by creating an order.
+   * Redirects to login if not authenticated.
+   * Clears cart on success and redirects to dashboard.
+   */
   const handleCheckout = async () => {
     if (!isAuthenticated) {
       window.location.href = '/login';
@@ -80,45 +109,99 @@ export default function Checkout() {
       window.location.href = '/dashboard';
     } catch (err) {
       console.error(err);
-      alert('Error al crear la orden. Intenta de nuevo.');
+      alert('Error creating order. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   if (!mounted) {
-    return <div className="p-6 text-center text-primary-light">Cargando carrito...</div>;
+    return (
+      <div className="p-6 text-center text-primary-light">
+        Loading cart...
+      </div>
+    );
   }
+
+  // Calculate total
+  const total = items.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <div className="bg-primary-dark rounded-lg p-6">
-      <h2 className="text-2xl font-semibold text-primary-lightest mb-4">Carrito</h2>
+      <h2 className="text-2xl font-semibold text-primary-lightest mb-4">
+        Cart
+      </h2>
       {items.length === 0 ? (
-        <div className="text-primary-light">Tu carrito está vacío.</div>
+        <div className="text-primary-light">Your cart is empty.</div>
       ) : (
         <div className="space-y-4">
           {items.map((it) => (
-            <div key={it.id} className="flex items-center justify-between bg-primary-darkest p-3 rounded">
+            <div
+              key={it.id}
+              className="flex items-center justify-between bg-primary-darkest p-3 rounded"
+            >
               <div className="flex items-center gap-3">
-                {it.imageUrl ? <img src={it.imageUrl} alt={it.name} className="w-16 h-16 object-cover rounded" /> : <div className="w-16 h-16 bg-primary-dark rounded" />}
+                {it.imageUrl ? (
+                  <img
+                    src={it.imageUrl}
+                    alt={it.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-primary-dark rounded" />
+                )}
                 <div>
-                  <div className="text-primary-lightest font-semibold">{it.name}</div>
-                  <div className="text-primary-light text-sm">{it.provider}</div>
+                  <div className="text-primary-lightest font-semibold">
+                    {it.name}
+                  </div>
+                  <div className="text-primary-light text-sm">
+                    {it.provider}
+                  </div>
                 </div>
               </div>
 
               <div className="text-right">
-                <div className="text-primary-accent font-semibold">${Number(it.price).toFixed(2)}</div>
+                <div className="text-primary-accent font-semibold">
+                  ${Number(it.price).toFixed(2)}
+                </div>
                 <div className="mt-2 flex gap-2 justify-end">
-                  <button onClick={() => handleRemove(it.id)} className="px-3 py-1 rounded bg-red-600 text-white">Eliminar</button>
+                  <button
+                    onClick={() => handleRemove(it.id)}
+                    className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             </div>
           ))}
 
-          <div className="flex justify-between items-center pt-4 border-t border-primary-medium">
-            <button onClick={handleClear} className="px-4 py-2 bg-primary-darkest border border-primary-medium rounded text-primary-light">Vaciar</button>
-            <button onClick={handleCheckout} disabled={loading} className="px-4 py-2 bg-primary-accent text-white rounded">{loading ? 'Procesando...' : 'Checkout'}</button>
+          {/* Cart Summary */}
+          <div className="pt-4 border-t border-primary-medium">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-primary-lightest font-semibold">
+                Total:
+              </span>
+              <span className="text-2xl font-bold text-primary-accent">
+                ${total.toFixed(2)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center gap-3">
+              <button
+                onClick={handleClear}
+                className="px-4 py-2 bg-primary-darkest border border-primary-medium rounded text-primary-light hover:bg-primary-medium"
+              >
+                Clear
+              </button>
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                className="px-4 py-2 bg-primary-accent text-white rounded hover:bg-opacity-80 disabled:opacity-50"
+              >
+                {loading ? 'Processing...' : 'Checkout'}
+              </button>
+            </div>
           </div>
         </div>
       )}

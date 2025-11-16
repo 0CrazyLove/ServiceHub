@@ -1,4 +1,10 @@
 ---
+/**
+ * Registration page.
+ * 
+ * User registration form with account creation flow.
+ * Centered layout with dark background theme.
+ */
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.jsx';
 import RegisterForm from '../components/RegisterForm.jsx';
@@ -12,10 +18,10 @@ import Footer from '../components/Footer.jsx';
     <div class="container mx-auto px-4">
       <div class="max-w-2xl mx-auto">
         <h1 class="text-4xl font-bold text-primary-lightest mb-4 text-center">
-          Únete a ServiceHub
+          Join ServiceHub
         </h1>
         <p class="text-primary-light text-center mb-12">
-          Crea una cuenta para acceder a nuestros servicios
+          Create an account to access our services
         </p>
         
         <RegisterForm client:load />

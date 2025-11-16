@@ -3,6 +3,19 @@ import { useAuth } from '../hooks/useAuth';
 import { loginUser, googleCallback } from '../../Services/api';
 import { useGoogleLogin } from '@react-oauth/google';
 
+/**
+ * Login form component with email/password and Google OAuth support.
+ * 
+ * Provides two authentication methods:
+ * - Email and password login with validation
+ * - Google OAuth authentication using authorization code flow
+ * 
+ * Handles loading states, error messages, and password visibility toggle.
+ * Redirects to home page after successful authentication.
+ * Includes demo credentials for testing.
+ * 
+ * @returns {JSX.Element} Login form
+ */
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,6 +24,11 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
+  /**
+   * Handle email/password form submission.
+   * 
+   * @param {React.FormEvent} e - Form submission event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,14 +41,14 @@ export default function LoginForm() {
         window.location.href = '/';
       }, 500);
     } catch (err) {
-      let errorMessage = 'Error al iniciar sesión';
+      let errorMessage = 'Error logging in';
       
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        errorMessage = 'Email o contraseña incorrectos. Intenta de nuevo.';
+        errorMessage = 'Invalid email or password. Please try again.';
       } else if (err.message.includes('400') || err.message.includes('Bad Request')) {
-        errorMessage = 'Por favor verifica tus datos.';
+        errorMessage = 'Please verify your information.';
       } else if (err.message.includes('500')) {
-        errorMessage = 'Error del servidor. Intenta más tarde.';
+        errorMessage = 'Server error. Please try again later.';
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -41,33 +59,36 @@ export default function LoginForm() {
     }
   };
 
-  // NUEVO: Usar useGoogleLogin para obtener código de autorización
+  /**
+   * Google OAuth login using authorization code flow.
+   * Exchanges authorization code for access token and user data.
+   */
   const googleLogin = useGoogleLogin({
     flow: 'auth-code',
     onSuccess: async (codeResponse) => {
       setError('');
       setLoading(true);
       try {
-        // Enviar el código de autorización al backend
+        // Send authorization code to backend
         const response = await googleCallback(codeResponse.code);
         
-        // Guardar token y datos del usuario
+        // Store token and user data
         login(response, response.token);
         
-        // Redirigir al usuario
+        // Redirect to home
         setTimeout(() => {
           window.location.href = '/';
         }, 500);
       } catch (err) {
-        console.error('Error en Google login:', err);
-        setError('Error al iniciar sesión con Google. Intenta de nuevo.');
+        console.error('Google login error:', err);
+        setError('Error logging in with Google. Please try again.');
       } finally {
         setLoading(false);
       }
     },
     onError: (error) => {
-      console.error('Error en Google OAuth:', error);
-      setError('Error al conectar con Google. Intenta de nuevo.');
+      console.error('Google OAuth error:', error);
+      setError('Error connecting to Google. Please try again.');
     },
     scope: 'openid email profile'
   });
@@ -76,16 +97,17 @@ export default function LoginForm() {
     <div className="w-full max-w-md mx-auto">
       <div className="bg-primary-dark rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">
-          Iniciar Sesión
+          Login
         </h2>
         
+        {/* Error message display */}
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-200 px-4 py-3 rounded-md mb-4">
             {error}
           </div>
         )}
 
-        {/* Botón de Google personalizado */}
+        {/* Google OAuth button */}
         <div className="mb-6">
           <button
             onClick={() => googleLogin()}
@@ -110,25 +132,29 @@ export default function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continuar con Google
+            Continue with Google
           </button>
         </div>
 
-        {/* Separador */}
+        {/* Divider */}
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-primary-accent"></div>
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-4 bg-primary-dark text-primary-light">
-              O continúa con email
+              Or continue with email
             </span>
           </div>
         </div>
 
+        {/* Email and password form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-primary-light text-sm font-medium mb-2">
+            <label
+              htmlFor="email"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
               Email
             </label>
             <input
@@ -142,8 +168,11 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-primary-light text-sm font-medium mb-2">
-              Contraseña
+            <label
+              htmlFor="password"
+              className="block text-primary-light text-sm font-medium mb-2"
+            >
+              Password
             </label>
             <div className="relative">
               <input
@@ -158,16 +187,24 @@ export default function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-light hover:text-primary-lightest transition"
-                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 ) : (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
+                      clipRule="evenodd"
+                    />
                     <path d="M15.171 13.576l1.414 1.414A10.025 10.025 0 0020 10c-1.274-4.057-5.064-7-9.542-7a9.971 9.971 0 00-3.516.635l1.414 1.414a6 6 0 018.644 8.527z" />
                   </svg>
                 )}
@@ -180,27 +217,28 @@ export default function LoginForm() {
             disabled={loading}
             className="w-full bg-primary-accent hover:bg-opacity-80 disabled:opacity-50 text-primary-lightest font-bold py-2 px-4 rounded-md transition"
           >
-            {loading ? 'Iniciando...' : 'Iniciar Sesión'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
+        {/* Sign up link */}
         <p className="text-primary-light text-center mt-6">
-          ¿No tienes cuenta?{' '}
+          Don't have an account?{' '}
           <a href="/registro" className="text-primary-accent hover:text-primary-lightest font-bold">
-            Regístrate aquí
+            Sign up here
           </a>
         </p>
 
         {/* Demo credentials */}
         <div className="mt-6 pt-6 border-t border-primary-accent">
           <p className="text-primary-light text-sm text-center mb-2">
-            Credenciales de prueba:
+            Test credentials:
           </p>
           <p className="text-primary-light text-xs text-center">
             Email: <code className="bg-primary-medium px-2 py-1 rounded">admin@example.com</code>
           </p>
           <p className="text-primary-light text-xs text-center">
-            Contraseña: <code className="bg-primary-medium px-2 py-1 rounded">Admin123!</code>
+            Password: <code className="bg-primary-medium px-2 py-1 rounded">Admin123!</code>
           </p>
         </div>
       </div>
