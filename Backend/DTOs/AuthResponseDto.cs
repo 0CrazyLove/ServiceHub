@@ -1,4 +1,4 @@
-namespace backend.DTOs;
+namespace Backend.DTOs;
 
 /// <summary>
 /// Model representing the authentication response returned after successful login or registration.
