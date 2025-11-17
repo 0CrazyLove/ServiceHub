@@ -29,7 +29,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var (response, succeeded, errors) = await authService.RegisterUserAsync(model);
 
-        if (!succeeded)
+        if (!succeeded || response == null)
         {
             return BadRequest(new { errors = errors!.Select(e => e.Description) });
         }
@@ -50,7 +50,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var (response, succeeded) = await authService.LoginUserAsync(model);
 
-        if (!succeeded) return Unauthorized();
+        if (!succeeded || response == null) return Unauthorized(new {message = "Invalid credentials"});
 
         return Ok(response);
     }

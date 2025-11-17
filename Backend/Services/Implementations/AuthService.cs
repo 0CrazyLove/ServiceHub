@@ -10,7 +10,7 @@ using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
 using System.Net.Http.Headers;
-
+using System.Text.Json.Serialization;
 
 namespace Backend.Services.Implementations;
 
@@ -265,12 +265,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
 
         var tokenResponse = await response.Content.ReadFromJsonAsync<GoogleTokenResponse>();
 
-        if (tokenResponse == null)
-        {
-            throw new Exception("Failed to deserialize token response from Google");
-        }
-
-        return tokenResponse;
+        return tokenResponse ?? throw new Exception("Failed to deserialize token response from Google");
     }
 
     /// <summary>
@@ -301,12 +296,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
 
         var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleJwtPayload>(jsonString, options);
 
-        if (userInfo == null)
-        {
-            throw new Exception("Invalid user information received from Google");
-        }
-
-        return userInfo;
+        return userInfo ??  throw new Exception("Invalid user information received from Google");;
     }
 
     /// <summary>
@@ -388,31 +378,31 @@ public class GoogleJwtPayload
     /// <summary>
     /// The unique Google user ID (subject).
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("sub")]
+    [JsonPropertyName("sub")]
     public string Sub { get; set; } = string.Empty;
 
     /// <summary>
     /// The user's email address.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("email")]
+    [JsonPropertyName("email")]
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether the email address has been verified by Google.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("email_verified")]
+    [JsonPropertyName("email_verified")]
     public bool EmailVerified { get; set; }
 
     /// <summary>
     /// The user's full name.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// The URL to the user's profile picture.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("picture")]
+    [JsonPropertyName("picture")]
     public string? Picture { get; set; }
 }
 
@@ -427,22 +417,22 @@ public class GoogleTokenResponse
     /// <summary>
     /// The access token for making authenticated requests to Google APIs.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("access_token")]
+    [JsonPropertyName("access_token")]
     public string AccessToken { get; set; } = string.Empty;
 
     /// <summary>
     /// The refresh token for obtaining new access tokens (optional).
     /// Only provided on first authorization or when offline_access is requested.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("refresh_token")]
+    [JsonPropertyName("refresh_token")]
     public string? RefreshToken { get; set; }
 
     /// <summary>
     /// The lifetime of the access token in seconds.
     /// </summary>
-    [System.Text.Json.Serialization.JsonPropertyName("expires_in")]
+    [JsonPropertyName("expires_in")]
     public int ExpiresIn { get; set; }
 
-    [System.Text.Json.Serialization.JsonPropertyName("token_type")]
+    [JsonPropertyName("token_type")]
     public string TokenType { get; set; } = string.Empty;
 }
