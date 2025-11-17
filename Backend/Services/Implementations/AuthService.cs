@@ -8,6 +8,7 @@ using System.Text;
 using Backend.Data;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
+using Backend.Configurations;
 
 namespace Backend.Services.Implementations;
 
@@ -17,40 +18,65 @@ namespace Backend.Services.Implementations;
 /// Handles user account creation, credential validation, JWT token generation,
 /// and Google OAuth integration with refresh token management.
 /// </summary>
-public class AuthService(
-    UserManager<IdentityUser> userManager,
-    SignInManager<IdentityUser> signInManager,
-    IHttpClientFactory httpClientFactory,
-    AppDbContext context) : IAuthService
+public class AuthService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IHttpClientFactory httpClientFactory,
+AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger) : IAuthService
 {
-    /// <summary>
     /// Register a new user account with email and password.
     /// 
     /// Creates a new IdentityUser with the provided credentials, assigns Customer role,
     /// and returns a JWT token for immediate authentication.
     /// </summary>
-    public async Task<(AuthResponseDto? response, bool succeeded)> RegisterUserAsync(RegisterDto model)
+    public async Task<(AuthResponseDto? response, bool succeeded, IEnumerable<IdentityError>? Errors)> RegisterUserAsync(RegisterDto model)
     {
-        var user = new IdentityUser
+        var correlationId = Guid.NewGuid().ToString();
+        try
         {
-            UserName = model.UserName,
-            Email = model.Email
-        };
-        var result = await userManager.CreateAsync(user, model.Password!);
-        if (!result.Succeeded) return (null, false);
-        
-        await userManager.AddToRoleAsync(user, "Customer");
-        var roles = await userManager.GetRolesAsync(user);
-        var token = GenerateJwtToken(user, roles);
-        
-        var response = new AuthResponseDto
+            logger.LogDebug("Starting registration - CorrelationId: {CorrelationId}", correlationId);
+
+            var user = new IdentityUser
+            {
+                UserName = model.UserName,
+                Email = model.Email
+            };
+
+            var result = await userManager.CreateAsync(user, model.Password!);
+
+            if (result.Succeeded)
+            {
+                var errorCodes = string.Join(", ", result.Errors.Select(e => e.Code));
+                logger.LogWarning("Failure to create user {UserName}. Errors: {ErrorCodes}, CorrelationId: {CorrelationId}", model.UserName, errorCodes, correlationId);
+                return (null, false, result.Errors);
+            }
+
+            await userManager.AddToRoleAsync(user, "Customer");
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            var token = GenerateJwtToken(user, roles);
+
+            var response = new AuthResponseDto
+            {
+                Token = token,
+                Username = user.UserName!,
+                Email = user.Email!,
+                Roles = roles
+            };
+            logger.LogInformation("Registration successful. UserId: {UserId}, Roles: {RoleCount}, CorrelationId: {CorrelationId}", user.Id, roles.Count, correlationId);
+            return (response, true, null);
+        }
+        catch (Exception ex)
         {
-            Token = token,
-            Username = user.UserName!,
-            Email = user.Email!,
-            Roles = roles
-        };
-        return (response, true);
+            logger.LogCritical(ex, "Critical error during registration: {UserName}, CorrelationId: {CorrelationId}", model.UserName, correlationId);
+            var errors = new List<IdentityError>
+            {
+                new()
+                {
+                    Code  = "RegistrationError",
+                    Description = "An error occurred during registration. Please try again."
+                }
+            };
+            return (null, false, errors);
+        }
     }
 
     /// <summary>
@@ -61,39 +87,67 @@ public class AuthService(
     /// </summary>
     public async Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model)
     {
-        if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+        var correlationId = Guid.NewGuid().ToString();
+
+        try
         {
-            // Timing attack mitigation: add random delay on invalid input
+            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+            {
+
+                logger.LogWarning("Login attempt with empty credentials - CorrelationId: {CorrelationId}", correlationId);
+
+                await Task.Delay(Random.Shared.Next(100, 300));
+
+                return (null, false);
+            }
+
+
+            logger.LogDebug("Starting login - CorrelationId: {CorrelationId}", correlationId);
+
+            var user = await userManager.FindByEmailAsync(model.Email);
+
+            if (user is null)
+            {
+                logger.LogWarning("Login attempt for non-existent email - CorrelationId: {CorrelationId}", correlationId);
+
+                await Task.Delay(Random.Shared.Next(100, 300));
+
+                return (null, false);
+            }
+
+            var result = await signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false); // No lockout for simplicity in development
+
+            if (!result.Succeeded)
+            {
+                var reason = result.IsLockedOut ? "Lockout" : result.IsNotAllowed ? "NotAllowed" : "InvalidCredentials";
+
+                logger.LogWarning("Login failed. Reason: {Reason}, UserId: {UserId}, CorrelationId: {CorrelationId}", reason, user.Id, correlationId);
+                await Task.Delay(Random.Shared.Next(100, 300));
+
+                return (null, false);
+            }
+
+            var roles = await userManager.GetRolesAsync(user);
+            var token = GenerateJwtToken(user, roles);
+
+            var response = new AuthResponseDto
+            {
+                Token = token,
+                Username = user.UserName!,
+                Email = user.Email!,
+                Roles = roles
+            };
+
+            logger.LogInformation("Login successful. UserId: {UserId}, Roles: {RoleCount}, CorrelationId: {CorrelationId}", user.Id, roles.Count, correlationId);
+
+            return (response, true);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Critical error during login. CorrelationId: {CorrelationId}", correlationId);
             await Task.Delay(Random.Shared.Next(100, 300));
             return (null, false);
         }
-        
-        var user = await userManager.FindByEmailAsync(model.Email);
-        if (user is null)
-        {
-            // Timing attack mitigation: add random delay when user not found
-            await Task.Delay(Random.Shared.Next(100, 300));
-            return (null, false);
-        }
-        
-        var result = await signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
-        if (!result.Succeeded)
-        {
-            // Timing attack mitigation: add random delay on invalid password
-            await Task.Delay(Random.Shared.Next(100, 300));
-            return (null, false);
-        }
-        
-        var roles = await userManager.GetRolesAsync(user);
-        var token = GenerateJwtToken(user, roles);
-        var response = new AuthResponseDto
-        {
-            Token = token,
-            Username = user.UserName!,
-            Email = user.Email!,
-            Roles = roles
-        };
-        return (response, true);
     }
 
     /// <summary>
@@ -227,29 +281,29 @@ public class AuthService(
         var client = httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        
+
         var response = await client.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception("Failed to retrieve user information from Google");
         }
-        
+
         var jsonString = await response.Content.ReadAsStringAsync();
-        
+
         var options = new System.Text.Json.JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
-        
+
         var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleJwtPayload>(jsonString, options);
-        
+
         if (userInfo == null)
         {
             throw new Exception("Invalid user information received from Google");
         }
-        
+
         return userInfo;
     }
 
@@ -286,9 +340,9 @@ public class AuthService(
     /// Creates a token with user claims, roles, and optional Google profile information.
     /// Token expiration is configured via JWT_EXPIRATION_MINUTES environment variable.
     /// </summary>
-    private static string GenerateJwtToken(IdentityUser user, IList<string> roles, string? displayName = null, string? picture = null)
+    private string GenerateJwtToken(IdentityUser user, IList<string> roles, string? displayName = null, string? picture = null)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var claims = new List<Claim>
         {
@@ -310,10 +364,10 @@ public class AuthService(
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var token = new JwtSecurityToken(
-            issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
-            audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+            issuer: jwtSettings.Issuer,
+            audience: jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES")!)),
+            expires: DateTime.UtcNow.AddMinutes(jwtSettings.ExpirationMinutes),
             signingCredentials: credentials
         );
 
