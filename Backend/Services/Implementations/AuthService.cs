@@ -9,6 +9,8 @@ using Backend.Data;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
+using System.Net.Http.Headers;
+
 
 namespace Backend.Services.Implementations;
 
@@ -19,7 +21,7 @@ namespace Backend.Services.Implementations;
 /// and Google OAuth integration with refresh token management.
 /// </summary>
 public class AuthService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IHttpClientFactory httpClientFactory,
-AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger) : IAuthService
+AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, GoogleSettings googleSettings) : IAuthService
 {
     /// Register a new user account with email and password.
     /// 
@@ -242,18 +244,18 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger) : IA
     /// </summary>
     private async Task<GoogleTokenResponse> ExchangeCodeForTokensAsync(string code)
     {
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient("GoogleToken");
 
-        var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "code", code },
-            { "client_id", Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")! },
-            { "client_secret", Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")! },
+            { "client_id", googleSettings.ClientId },
+            { "client_secret", googleSettings.ClientSecret },
             { "redirect_uri", "postmessage" },
             { "grant_type", "authorization_code" }
         });
 
-        var response = await client.PostAsync("https://oauth2.googleapis.com/token", content);
+        var response = await client.PostAsync("token", content);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -278,11 +280,11 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger) : IA
     /// </summary>
     private async Task<GoogleJwtPayload> GetGoogleUserInfoAsync(string accessToken)
     {
-        var client = httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        var client = httpClientFactory.CreateClient("GoogleApi");
 
-        var response = await client.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await client.GetAsync("userinfo");
 
         if (!response.IsSuccessStatusCode)
         {
