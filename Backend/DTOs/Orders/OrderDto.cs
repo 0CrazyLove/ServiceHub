@@ -1,4 +1,4 @@
-namespace Backend.DTOs;
+namespace Backend.DTOs.Orders;
 
 /// <summary>
 /// Data Transfer Object for order creation requests (input).

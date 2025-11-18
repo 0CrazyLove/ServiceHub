@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.DTOs;
+namespace Backend.DTOs.Dashboard;
 
 /// <summary>
 /// Data Transfer Object for dashboard statistics.

@@ -1,4 +1,4 @@
-namespace Backend.DTOs;
+namespace Backend.DTOs.Auth;
 
 /// <summary>
 /// Data Transfer Object for authentication responses.

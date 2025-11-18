@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.DTOs;
+namespace Backend.DTOs.Services;
 
 /// <summary>
 /// Data Transfer Object for service creation and update requests.

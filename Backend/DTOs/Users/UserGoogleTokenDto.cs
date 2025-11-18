@@ -1,4 +1,4 @@
-namespace Backend.DTOs;
+namespace Backend.DTOs.Users;
 
 /// <summary>
 /// Data Transfer Object for retrieving Google token information.
