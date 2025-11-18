@@ -1,4 +1,4 @@
-using Backend.DTOs;
+using Backend.DTOs.Orders;
 using Backend.Models;
 
 namespace Backend.Services.Interfaces;

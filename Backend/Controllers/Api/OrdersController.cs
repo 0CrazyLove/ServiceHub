@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Backend.Models;
-using Backend.DTOs;
+using Backend.DTOs.Orders;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Services.Interfaces;
 using System.Security.Claims;
