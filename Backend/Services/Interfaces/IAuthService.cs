@@ -1,4 +1,4 @@
-using Backend.DTOs;
+using Backend.DTOs.Auth;
 using Microsoft.AspNetCore.Identity;
 namespace Backend.Services.Interfaces;
 

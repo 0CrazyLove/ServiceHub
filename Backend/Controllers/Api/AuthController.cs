@@ -1,4 +1,4 @@
-using Backend.DTOs;
+using Backend.DTOs.Auth;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
