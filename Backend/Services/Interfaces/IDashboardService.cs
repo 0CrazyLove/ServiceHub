@@ -1,4 +1,4 @@
-using Backend.DTOs;
+using Backend.DTOs.Dashboard;
 
 namespace Backend.Services.Interfaces;
 
