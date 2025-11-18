@@ -1,4 +1,5 @@
 using Backend.DTOs.Auth;
+using Backend.DTOs.Auth.GoogleAuth;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -10,7 +11,7 @@ using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
+
 
 namespace Backend.Services.Implementations;
 
@@ -242,7 +243,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     /// Makes HTTP request to Google OAuth token endpoint using provided credentials
     /// from environment variables.
     /// </summary>
-    private async Task<GoogleTokenResponse> ExchangeCodeForTokensAsync(string code)
+    private async Task<GoogleTokenResponseDto> ExchangeCodeForTokensAsync(string code)
     {
         var client = httpClientFactory.CreateClient("GoogleToken");
 
@@ -263,7 +264,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
             throw new Exception($"Failed to exchange authorization code: {errorContent}");
         }
 
-        var tokenResponse = await response.Content.ReadFromJsonAsync<GoogleTokenResponse>();
+        var tokenResponse = await response.Content.ReadFromJsonAsync<GoogleTokenResponseDto>();
 
         return tokenResponse ?? throw new Exception("Failed to deserialize token response from Google");
     }
@@ -273,7 +274,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     /// 
     /// Calls Google userinfo endpoint and deserializes the response.
     /// </summary>
-    private async Task<GoogleJwtPayload> GetGoogleUserInfoAsync(string accessToken)
+    private async Task<GoogleJwtPayloadDto> GetGoogleUserInfoAsync(string accessToken)
     {
         var client = httpClientFactory.CreateClient("GoogleApi");
 
@@ -294,7 +295,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
-        var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleJwtPayload>(jsonString, options);
+        var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleJwtPayloadDto>(jsonString, options);
 
         return userInfo ??  throw new Exception("Invalid user information received from Google");;
     }
@@ -367,72 +368,5 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     }
 }
 
-/// <summary>
-/// Google OAuth JWT payload model.
-/// 
-/// Represents the user information returned by Google's userinfo endpoint.
-/// Uses JsonPropertyName attributes for proper deserialization of Google's response format.
-/// </summary>
-public class GoogleJwtPayload
-{
-    /// <summary>
-    /// The unique Google user ID (subject).
-    /// </summary>
-    [JsonPropertyName("sub")]
-    public string Sub { get; set; } = string.Empty;
 
-    /// <summary>
-    /// The user's email address.
-    /// </summary>
-    [JsonPropertyName("email")]
-    public string Email { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Whether the email address has been verified by Google.
-    /// </summary>
-    [JsonPropertyName("email_verified")]
-    public bool EmailVerified { get; set; }
-
-    /// <summary>
-    /// The user's full name.
-    /// </summary>
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The URL to the user's profile picture.
-    /// </summary>
-    [JsonPropertyName("picture")]
-    public string? Picture { get; set; }
-}
-
-/// <summary>
-/// Google OAuth token response model.
-/// 
-/// Represents tokens returned by Google's token endpoint.
-/// Includes access token for API calls and optional refresh token for long-lived sessions.
-/// </summary>
-public class GoogleTokenResponse
-{
-    /// <summary>
-    /// The access token for making authenticated requests to Google APIs.
-    /// </summary>
-    [JsonPropertyName("access_token")]
-    public string AccessToken { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The refresh token for obtaining new access tokens (optional).
-    /// Only provided on first authorization or when offline_access is requested.
-    /// </summary>
-    [JsonPropertyName("refresh_token")]
-    public string? RefreshToken { get; set; }
-
-    /// <summary>
-    /// The lifetime of the access token in seconds.
-    /// </summary>
-    [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; set; }
-
-    [JsonPropertyName("token_type")]
-    public string TokenType { get; set; } = string.Empty;
-}
