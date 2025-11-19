@@ -1,34 +1,59 @@
 import React from 'react';
 
 /**
- * Hero banner section component.
+ * Modern Hero component.
  * 
- * Displays a prominent banner at the top of the page with call-to-action
- * and search functionality for finding services.
- * Uses dark primary color scheme with centered layout.
+ * Displays a visually appealing banner with a background image,
+ * large headline, and call-to-action.
  * 
  * @returns {JSX.Element} Hero section
  */
 export default function Hero() {
   return (
-    <section className="bg-primary-darkest text-primary-lightest">
-      <div className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-4xl font-bold mb-4">
-          Encuentra los mejores servicios
-        </h2>
-        <p className="text-lg mb-8">
-          Conectando profesionales con clientes en todo el mundo
-        </p>
-        <div className="flex justify-center">
-          <input
-            type="text"
-            placeholder="¿Qué servicio estás buscando?"
-            className="w-1/2 px-4 py-2 rounded-l-md bg-primary-dark text-primary-lightest border border-primary-medium focus:outline-none focus:border-primary-accent"
-            aria-label="Buscar servicios"
-          />
-          <button className="bg-primary-accent hover:bg-opacity-80 text-white px-6 py-2 rounded-r-md font-semibold">
-            Buscar
-          </button>
+    <section className="relative bg-primary-darkest text-primary-lightest min-h-[600px] flex items-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+          alt="Office collaboration"
+          className="w-full h-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-darkest via-primary-darkest/80 to-transparent"></div>
+      </div>
+
+      {/* Content */}
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-3xl">
+          <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
+            Transforma tus ideas en <span className="text-primary-accent">realidad</span>
+          </h1>
+          <p className="text-xl text-primary-light mb-8 max-w-2xl leading-relaxed">
+            Accede a una red global de talento freelance. Desde desarrollo web hasta marketing digital, encuentra al experto perfecto para tu próximo proyecto.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button className="px-8 py-4 bg-primary-accent text-white rounded-lg font-semibold text-lg hover:bg-opacity-90 transition-all shadow-lg hover:shadow-primary-accent/30 transform hover:-translate-y-1">
+              Comenzar ahora
+            </button>
+            <button className="px-8 py-4 bg-primary-medium/30 text-white rounded-lg font-semibold text-lg hover:bg-primary-medium/50 transition-all backdrop-blur-sm border border-primary-light/10">
+              Ver cómo funciona
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-12 flex gap-8 border-t border-primary-light/10 pt-8">
+            <div>
+              <p className="text-3xl font-bold text-white">50k+</p>
+              <p className="text-sm text-primary-light">Freelancers</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-white">100k+</p>
+              <p className="text-sm text-primary-light">Proyectos</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-white">4.9/5</p>
+              <p className="text-sm text-primary-light">Valoración</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
