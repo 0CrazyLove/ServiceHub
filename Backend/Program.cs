@@ -21,6 +21,9 @@ using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 using Backend.Configurations;
+using System.Diagnostics;
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
 var builder = WebApplication.CreateBuilder(args);
 
