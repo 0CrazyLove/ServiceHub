@@ -11,6 +11,7 @@ using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
 using System.Net.Http.Headers;
+using System.Diagnostics;
 
 
 namespace Backend.Services.Implementations;
@@ -31,7 +32,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     /// </summary>
     public async Task<(AuthResponseDto? response, bool succeeded, IEnumerable<IdentityError>? Errors)> RegisterUserAsync(RegisterDto model)
     {
-        var correlationId = Guid.NewGuid().ToString();
+        var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
         try
         {
             logger.LogDebug("Starting registration - CorrelationId: {CorrelationId}", correlationId);
@@ -90,7 +91,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     /// </summary>
     public async Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model)
     {
-        var correlationId = Guid.NewGuid().ToString();
+        var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
 
         try
         {
