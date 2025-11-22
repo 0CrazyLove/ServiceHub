@@ -22,6 +22,9 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 using Backend.Configurations;
 using System.Diagnostics;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
 
 Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
@@ -98,6 +101,19 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IServicesService, ServicesService>();
 builder.Services.AddSingleton<JwtSettings>();
 builder.Services.AddSingleton<GoogleSettings>();
+builder.Services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(sp =>
+    new ConfigurationManager<OpenIdConnectConfiguration>(
+        "https://accounts.google.com/.well-known/openid-configuration",
+        new OpenIdConnectConfigurationRetriever(),
+        new HttpDocumentRetriever()
+        {
+            RequireHttps = true
+        })
+    {
+        AutomaticRefreshInterval = TimeSpan.FromHours(12),
+        RefreshInterval = TimeSpan.FromMinutes(30)
+    }
+);
 
 
 builder.Services.AddHttpClient("GoogleApi", client =>
