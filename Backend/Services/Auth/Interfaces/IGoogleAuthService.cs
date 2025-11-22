@@ -26,7 +26,7 @@ public interface IGoogleAuthService
     /// </summary>
     /// <param name="userInfo">Google user information</param>
     /// <returns>Identity user and operation success status</returns>
-    Task<(IdentityUser? user, bool succeeded)> FindOrCreateGoogleUserAsync(GoogleJwtPayloadDto userInfo);
+    Task<IdentityUser?> FindOrCreateGoogleUserAsync(GoogleJwtPayloadDto userInfo);
 
     /// <summary>
     /// Update user's Google-related claims.

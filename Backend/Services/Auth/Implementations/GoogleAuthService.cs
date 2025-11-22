@@ -98,13 +98,13 @@ ILogger<GoogleAuthService> logger, UserManager<IdentityUser> userManager) : IGoo
         };
     }
 
-    public async Task<(IdentityUser? user, bool succeeded)> FindOrCreateGoogleUserAsync(GoogleJwtPayloadDto userInfo)
+    public async Task<IdentityUser?> FindOrCreateGoogleUserAsync(GoogleJwtPayloadDto userInfo)
     {
         var user = await userManager.FindByEmailAsync(userInfo.Email);
 
         if (user != null)
         {
-            return (user, true);
+            return user;
         }
 
         // Create new user
@@ -121,13 +121,23 @@ ILogger<GoogleAuthService> logger, UserManager<IdentityUser> userManager) : IGoo
         {
             var errorCodes = string.Join(", ", createResult.Errors.Select(e => e.Code));
             logger.LogError("Failed to create user for email {Email}. Errors: {Errors}", userInfo.Email, errorCodes);
-            return (null, false);
+            return null;
         }
 
-        await userManager.AddToRoleAsync(user, "Customer");
+        var roleResult = await userManager.AddToRoleAsync(user, "Customer");
+        if (!roleResult.Succeeded)
+        {
+            var errors = string.Join(", ", roleResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
+
+            await userManager.DeleteAsync(user);
+            
+            logger.LogWarning("Failed to add Customer role to user {UserId}. Errors: {Errors}", user.Id, errors);
+            
+            return null;
+        }
         logger.LogInformation("Created new Google user: {UserId}, Email: {Email}", user.Id, user.Email);
 
-        return (user, true);
+        return user;
     }
 
     /// <summary>
