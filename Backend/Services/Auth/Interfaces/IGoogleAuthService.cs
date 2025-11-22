@@ -1,7 +1,7 @@
 using Backend.DTOs.Auth.GoogleAuth;
 using Microsoft.AspNetCore.Identity;
 
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.Auth.Interfaces;
 
 /// <summary>
 /// Service for handling Google OAuth operations.

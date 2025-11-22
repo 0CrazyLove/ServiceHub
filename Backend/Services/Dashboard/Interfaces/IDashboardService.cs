@@ -1,6 +1,6 @@
 using Backend.DTOs.Dashboard;
 
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.Dashboard.Interfaces;
 
 /// <summary>
 /// Service interface for dashboard and administrative statistics.

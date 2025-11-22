@@ -4,9 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Backend.Services.Interfaces;
+using Backend.Services.Auth.Interfaces;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Auth.Implementations;
 
 /// <summary>
 /// Service responsible for JWT token generation and management.

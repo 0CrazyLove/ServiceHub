@@ -1,9 +1,9 @@
 using Backend.Data;
 using Backend.DTOs.Dashboard;
-using Backend.Services.Interfaces;
+using Backend.Services.Dashboard.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Dashboard.Implementations;
 
 /// <summary>
 /// Implementation of dashboard service for retrieving platform statistics.

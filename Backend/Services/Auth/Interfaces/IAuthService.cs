@@ -1,6 +1,6 @@
 using Backend.DTOs.Auth;
 using Microsoft.AspNetCore.Identity;
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.Auth.Interfaces;
 
 /// <summary>
 /// Service interface for authentication and authorization operations.

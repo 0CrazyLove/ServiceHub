@@ -1,4 +1,4 @@
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.Auth.Interfaces;
 
 /// <summary>
 /// Service for managing Google refresh tokens.

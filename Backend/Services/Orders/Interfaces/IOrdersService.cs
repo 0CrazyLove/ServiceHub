@@ -1,7 +1,7 @@
 using Backend.DTOs.Orders;
 using Backend.Models;
 
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.Orders.Interfaces;
 
 /// <summary>
 /// Service interface for order management operations.

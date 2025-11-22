@@ -1,11 +1,11 @@
 using Backend.Data;
 using Backend.Models;
 using Backend.DTOs.Services;
-using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Backend.Services.BusinessServices.Interfaces;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.BusinessServices.Implemetations;
 
 /// <summary>
 /// Implementation of service catalog management.

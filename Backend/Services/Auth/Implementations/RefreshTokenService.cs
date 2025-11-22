@@ -1,9 +1,9 @@
 using Backend.Data;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
-using Backend.Services.Interfaces;
+using Backend.Services.Auth.Interfaces;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Auth.Implementations;
 
 /// <summary>
 /// Service responsible for managing Google refresh tokens in the database.

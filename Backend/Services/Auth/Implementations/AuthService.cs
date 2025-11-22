@@ -1,9 +1,9 @@
 using Backend.DTOs.Auth;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
-using Backend.Services.Interfaces;
+using Backend.Services.Auth.Interfaces;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Auth.Implementations;
 
 /// <summary>
 /// Orchestrator service for authentication operations.

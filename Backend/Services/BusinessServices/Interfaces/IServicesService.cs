@@ -1,6 +1,6 @@
 using Backend.DTOs.Services;
 
-namespace Backend.Services.Interfaces;
+namespace Backend.Services.BusinessServices.Interfaces;
 
 /// <summary>
 /// Service interface for service catalog management operations.

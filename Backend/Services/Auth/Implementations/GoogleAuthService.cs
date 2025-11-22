@@ -5,11 +5,11 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Backend.Services.Interfaces;
+using Backend.Services.Auth.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Auth.Implementations;
 
 /// <summary>
 /// Service responsible for Google OAuth authentication operations.

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Backend.Services.Interfaces;
-
+namespace Backend.Services.Auth.Interfaces;
 /// <summary>
 /// Service for generating and managing JWT tokens.
 /// </summary>

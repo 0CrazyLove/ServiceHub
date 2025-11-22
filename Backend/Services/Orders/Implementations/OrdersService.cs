@@ -1,10 +1,10 @@
 using Backend.Data;
 using Backend.DTOs.Orders;
 using Backend.Models;
-using Backend.Services.Interfaces;
+using Backend.Services.Orders.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Services.Implementations;
+namespace Backend.Services.Orders.Implementations;
 
 /// <summary>
 /// Implementation of order service for managing customer orders.
