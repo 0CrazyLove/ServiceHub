@@ -38,17 +38,6 @@ public interface IAuthService
     Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model);
 
     /// <summary>
-    /// Store a Google OAuth refresh token for a user.
-    /// 
-    /// Persists the refresh token to enable long-lived sessions and
-    /// background operations on behalf of the user.
-    /// </summary>
-    /// <param name="userId">The user ID to associate with the token.</param>
-    /// <param name="refreshToken">The Google refresh token to store.</param>
-    /// <param name="expiresIn">Token expiration time in seconds from now.</param>
-    Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn);
-
-    /// <summary>
     /// Handle Google OAuth callback after user authorization.
     /// 
     /// Exchanges an authorization code for tokens, retrieves user information,
