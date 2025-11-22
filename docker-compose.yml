@@ -6,7 +6,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: servicehub_database
     environment:
-      SA_PASSWORD: "${DB_PASSWORD:-PeneRicoBrawlStart2!}"
+      SA_PASSWORD: "${DB_PASSWORD}"
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Express"
     ports:
@@ -16,7 +16,7 @@ services:
     networks:
       - servicehub_network
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD:-PeneRicoBrawlStart2!}", "-Q", "SELECT 1"]
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD}", "-Q", "SELECT 1" ]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -31,10 +31,11 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:5097
-      CONNECTION_STRING: "Server=database;Database=AppDB;User Id=${DB_USER:-sa};Password=${DB_PASSWORD:-PeneRicoBrawlStart2!};Encrypt=false;TrustServerCertificate=true;"
-      JWT_ISSUER: "${JWT_ISSUER:-ProductAPI}"
-      JWT_AUDIENCE: "${JWT_AUDIENCE:-ProductWebClients}"
-      JWT_EXPIRATION_MINUTES: "60"
+      CONNECTION_STRING: "Server=database;Database=AppDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=false;TrustServerCertificate=true;"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+      JWT_ISSUER: "${JWT_ISSUER}"
+      JWT_AUDIENCE: "${JWT_AUDIENCE}"
+      JWT_EXPIRATION_MINUTES: "${JWT_EXPIRATION_MINUTES:-60}"
     ports:
       - "5097:5097"
     depends_on:
@@ -42,8 +43,7 @@ services:
         condition: service_healthy
     networks:
       - servicehub_network
-    volumes:
-      - ./Backend:/app/Backend
+
     restart: unless-stopped
 
   # Node.js Frontend (Astro)
@@ -73,7 +73,7 @@ services:
     networks:
       - servicehub_network
     restart: unless-stopped
-    profiles: ["debug"]
+    profiles: [ "debug" ]
 
 networks:
   servicehub_network:
