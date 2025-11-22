@@ -12,25 +12,25 @@ public class GoogleJwtPayloadDto
     /// The unique Google user ID (subject).
     /// </summary>
     [JsonPropertyName("sub")]
-    public string Sub { get; set; } = string.Empty;
+    public string? Sub { get; set; }
 
     /// <summary>
     /// The user's email address.
     /// </summary>
     [JsonPropertyName("email")]
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     /// <summary>
     /// Whether the email address has been verified by Google.
     /// </summary>
     [JsonPropertyName("email_verified")]
-    public bool EmailVerified { get; set; }
+    public bool? EmailVerified { get; set; }
 
     /// <summary>
     /// The user's full name.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
     /// <summary>
     /// The URL to the user's profile picture.
