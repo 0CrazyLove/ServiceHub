@@ -10,7 +10,6 @@ using Backend.Data;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
-using System.Net.Http.Headers;
 using System.Diagnostics;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -26,7 +25,8 @@ namespace Backend.Services.Implementations;
 /// and Google OAuth integration with refresh token management.
 /// </summary>
 public class AuthService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IHttpClientFactory httpClientFactory,
-AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, GoogleSettings googleSettings, IConfigurationManager<OpenIdConnectConfiguration> configurationManager) : IAuthService
+AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, GoogleSettings googleSettings, 
+IConfigurationManager<OpenIdConnectConfiguration> configurationManager) : IAuthService
 {
     /// Register a new user account with email and password.
     /// 
@@ -174,7 +174,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
             // Exchange authorization code for access and refresh tokens
             var tokenResponse = await ExchangeCodeForTokensAsync(authorizationCode);
 
-            if (tokenResponse.AccessToken is null)
+            if (tokenResponse.IdToken is null)
             {
                 return (null, false);
             }
@@ -397,6 +397,4 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
     }
 
 }
-
-
 
