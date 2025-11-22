@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
 using System.Net.Http.Headers;
 using System.Diagnostics;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
 
 
 namespace Backend.Services.Implementations;
@@ -23,7 +26,7 @@ namespace Backend.Services.Implementations;
 /// and Google OAuth integration with refresh token management.
 /// </summary>
 public class AuthService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IHttpClientFactory httpClientFactory,
-AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, GoogleSettings googleSettings) : IAuthService
+AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, GoogleSettings googleSettings, IConfigurationManager<OpenIdConnectConfiguration> configurationManager) : IAuthService
 {
     /// Register a new user account with email and password.
     /// 
@@ -176,7 +179,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
                 return (null, false);
             }
             // Retrieve user information from Google using access token
-            var userInfo = await GetGoogleUserInfoAsync(tokenResponse.AccessToken);
+            var userInfo = await DecodeAndValidateIdTokenAsync(tokenResponse.IdToken);
 
 
             // Find existing user or create new one
@@ -274,36 +277,56 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
 
         return tokenResponse ?? throw new Exception("Failed to deserialize token response from Google");
     }
+    //development
 
-    /// <summary>
-    /// Retrieve user information from Google using access token.
-    /// 
-    /// Calls Google userinfo endpoint and deserializes the response.
-    /// </summary>
-    private async Task<GoogleJwtPayloadDto> GetGoogleUserInfoAsync(string accessToken)
+    private async Task<GoogleJwtPayloadDto> DecodeAndValidateIdTokenAsync(string idToken)
     {
-        var client = httpClientFactory.CreateClient("GoogleApi");
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        var response = await client.GetAsync("userinfo");
-
-        if (!response.IsSuccessStatusCode)
+        if (string.IsNullOrWhiteSpace(idToken))
         {
-            throw new Exception("Failed to retrieve user information from Google");
+            throw new ArgumentException("El token no puede estar vacío");
         }
 
-        var jsonString = await response.Content.ReadAsStringAsync();
+        var handler = new JwtSecurityTokenHandler();
 
-        var options = new System.Text.Json.JsonSerializerOptions
+        var discoveryDocument = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+
+        var validationParameters = new TokenValidationParameters
         {
-            PropertyNameCaseInsensitive = true,
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            ValidateIssuer = true,
+            ValidIssuers = ["https://accounts.google.com", "accounts.google.com"],
+            ValidateAudience = true,
+            ValidAudience = googleSettings.ClientId,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(5),
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKeys = discoveryDocument.SigningKeys,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true
         };
 
-        var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleJwtPayloadDto>(jsonString, options);
+        var principal = handler.ValidateToken(idToken, validationParameters, out var validatedToken);
 
-        return userInfo ?? throw new Exception("Invalid user information received from Google"); ;
+        if (validatedToken is not JwtSecurityToken jwt || jwt.Header.Alg != SecurityAlgorithms.RsaSha256)
+        {
+            throw new SecurityTokenException("Token inválido: algoritmo no soportado");
+        }
+
+        var sub = principal.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? throw new SecurityTokenException("Claim 'sub' requerido");
+        var email = principal.FindFirstValue(JwtRegisteredClaimNames.Email) ?? throw new SecurityTokenException("Claim 'email' requerido");
+        var emailVerified = bool.TryParse(principal.FindFirstValue("email_verified"), out var verified) && verified;
+        var name = principal.FindFirstValue(JwtRegisteredClaimNames.Name) ?? throw new SecurityTokenException("Claim 'name' requerido");
+        var picture = principal.FindFirstValue("picture");
+
+        var userInfo = new GoogleJwtPayloadDto
+        {
+            Sub = sub,
+            Email = email,
+            EmailVerified = emailVerified,
+            Name = name,
+            Picture = picture
+        };
+
+        return userInfo;
     }
 
     /// <summary>
@@ -372,6 +395,7 @@ AppDbContext context, JwtSettings jwtSettings, ILogger<AuthService> logger, Goog
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 }
 
 
