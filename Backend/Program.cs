@@ -12,7 +12,6 @@
 
 using Backend.Extensions;
 using Backend.Services.Database.Interfaces;
-using Backend.Services.Database.Implementations;
 using DotNetEnv;
 using System.Diagnostics;
 using Backend.Configurations;
@@ -33,9 +32,6 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddGoogleOAuth();
 builder.Services.AddCorsConfiguration();
 builder.Services.AddApplicationServices();
-
-// Register database seeder
-builder.Services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
 // Add controllers
 builder.Services.AddControllers();

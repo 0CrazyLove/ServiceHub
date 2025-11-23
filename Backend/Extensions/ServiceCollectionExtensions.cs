@@ -6,12 +6,14 @@
 using Backend.Configurations;
 using Backend.Services.Auth.Implementations;
 using Backend.Services.Auth.Interfaces;
-using Backend.Services.BusinessServices.Implemetations;
-using Backend.Services.BusinessServices.Interfaces;
+using Backend.Services.Business.Implemetations;
+using Backend.Services.Business.Interfaces;
 using Backend.Services.Dashboard.Implementations;
 using Backend.Services.Dashboard.Interfaces;
 using Backend.Services.Orders.Implementations;
 using Backend.Services.Orders.Interfaces;
+using Backend.Services.Database.Implementations;
+using Backend.Services.Database.Interfaces;
 
 namespace Backend.Extensions;
 
@@ -32,6 +34,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<IServicesService, ServicesService>();
+        services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
         // Configuration settings
         services.AddSingleton<JwtSettings>();
