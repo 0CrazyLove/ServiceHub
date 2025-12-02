@@ -146,7 +146,7 @@ public class AuthService(
     /// Orchestrates the complete OAuth flow including token exchange, user creation/lookup,
     /// refresh token storage, and JWT generation.
     /// </summary>
-    public async Task<(AuthResponseDto? response, bool succeeded)> GoogleCallbackAsync(string authorizationCode)
+    public async Task<(AuthResponseDto? response, bool succeeded)> GoogleCallbackAsync(string authorizationCode, CancellationToken cancellationToken)
     {
         var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
 
@@ -154,14 +154,14 @@ public class AuthService(
 
         try
         {
-            var tokenResponse = await googleAuthService.ExchangeCodeForTokensAsync(authorizationCode);
+            var tokenResponse = await googleAuthService.ExchangeCodeForTokensAsync(authorizationCode , cancellationToken);
 
-            if (tokenResponse.IdToken is null)
+            if (string.IsNullOrEmpty(tokenResponse.IdToken))
             {
                 logger.LogWarning("Google token response missing ID token. CorrelationId: {CorrelationId}", correlationId);
                 return (null, false);
             }
-            var userInfo = await googleAuthService.DecodeAndValidateIdTokenAsync(tokenResponse.IdToken);
+            var userInfo = await googleAuthService.DecodeAndValidateIdTokenAsync(tokenResponse.IdToken, cancellationToken);
 
             var user = await googleAuthService.FindOrCreateGoogleUserAsync(userInfo);
 
@@ -173,7 +173,7 @@ public class AuthService(
 
             if (!string.IsNullOrEmpty(tokenResponse.RefreshToken))
             {
-                await refreshTokenService.SaveRefreshTokenAsync(user.Id, tokenResponse.RefreshToken, tokenResponse.ExpiresIn);
+                await refreshTokenService.SaveRefreshTokenAsync(user.Id, tokenResponse.RefreshToken, tokenResponse.ExpiresIn , cancellationToken);
                 logger.LogDebug("Refresh token saved for user {UserId}. CorrelationId: {CorrelationId}", user.Id, correlationId);
             }
 

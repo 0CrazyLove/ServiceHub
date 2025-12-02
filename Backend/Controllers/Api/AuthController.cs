@@ -68,14 +68,14 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// Returns 401 Unauthorized if Google authentication fails.
     /// </returns>
     [HttpPost("google/callback")]
-    public async Task<IActionResult> GoogleCallback([FromBody] GoogleAuthCodeDto model)
+    public async Task<IActionResult> GoogleCallback([FromBody] GoogleAuthCodeDto model, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(model.Code))
         {
             return BadRequest(new { message = "Authorization code is required" });
         }
 
-        var (response, succeeded) = await authService.GoogleCallbackAsync(model.Code);
+        var (response, succeeded) = await authService.GoogleCallbackAsync(model.Code, cancellationToken);
 
         if (!succeeded || response == null)
         {
