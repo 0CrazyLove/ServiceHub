@@ -14,10 +14,10 @@ public class RefreshTokenService(AppDbContext context, ILogger<RefreshTokenServi
     /// Store or update Google refresh token for a user.
     /// Creates new record or updates existing one with new token and expiration time.
     /// </summary>
-    public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn)
+    public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn, CancellationToken cancellationToken)
     {
-        var existingToken = await context.UserGoogleTokens.FirstOrDefaultAsync(t => t.UserId == userId);
-        
+        var existingToken = await context.UserGoogleTokens.FirstOrDefaultAsync(t => t.UserId == userId, cancellationToken);
+
         if (existingToken != null)
         {
             existingToken.RefreshToken = refreshToken;
@@ -33,10 +33,10 @@ public class RefreshTokenService(AppDbContext context, ILogger<RefreshTokenServi
                 ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn),
                 CreatedAt = DateTime.UtcNow
             };
-            context.UserGoogleTokens.Add(newToken);
+            await context.UserGoogleTokens.AddAsync(newToken, cancellationToken);
             logger.LogDebug("Created new refresh token for user: {UserId}", userId);
         }
-        
-        await context.SaveChangesAsync();
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

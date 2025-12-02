@@ -11,5 +11,5 @@ public interface IRefreshTokenService
     /// <param name="userId">User ID</param>
     /// <param name="refreshToken">Google refresh token</param>
     /// <param name="expiresIn">Token expiration time in seconds</param>
-    Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn);
+    Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn , CancellationToken cancellationToken);
 }
