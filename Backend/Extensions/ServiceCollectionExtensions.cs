@@ -20,8 +20,10 @@ namespace Backend.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers all business services for dependency injection.
+    /// Registers all business services and configurations for dependency injection.
     /// </summary>
+    /// <param name="services">The service collection to add application services to.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         // Auth services

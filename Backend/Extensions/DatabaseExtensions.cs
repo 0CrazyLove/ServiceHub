@@ -12,8 +12,10 @@ namespace Backend.Extensions;
 public static class DatabaseExtensions
 {
     /// <summary>
-    /// Configures database context and ASP.NET Core Identity.
+    /// Configures the database context and ASP.NET Core Identity services.
     /// </summary>
+    /// <param name="services">The service collection to add database services to.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddDatabaseServices(this IServiceCollection services)
     {
         // Configure Entity Framework Core with SQL Server

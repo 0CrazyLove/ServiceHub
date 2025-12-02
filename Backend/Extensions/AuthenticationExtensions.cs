@@ -15,8 +15,11 @@ namespace Backend.Extensions;
 public static class AuthenticationExtensions
 {
     /// <summary>
-    /// Configures JWT Bearer authentication with token validation.
+    /// Configures JWT Bearer authentication with token validation parameters.
     /// </summary>
+    /// <param name="services">The service collection to add authentication to.</param>
+    /// <param name="jwtSettings">The JWT configuration settings.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings )
     {
         var jwtSecretKey = jwtSettings.SecretKey;
@@ -50,6 +53,8 @@ public static class AuthenticationExtensions
     /// <summary>
     /// Configures authorization policies for Admin and Customer roles.
     /// </summary>
+    /// <param name="services">The service collection to add policies to.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder().AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
@@ -59,8 +64,10 @@ public static class AuthenticationExtensions
     }
 
     /// <summary>
-    /// Configures Google OAuth services and HTTP clients.
+    /// Configures Google OAuth services and HTTP clients for API interaction.
     /// </summary>
+    /// <param name="services">The service collection to add Google OAuth to.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddGoogleOAuth(this IServiceCollection services)
     {
         // Configure OpenID Connect configuration manager for Google
