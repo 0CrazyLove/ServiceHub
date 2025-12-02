@@ -18,8 +18,10 @@ public class AuthService(
     ILogger<AuthService> logger) : IAuthService
 {
     /// <summary>
-    /// Register a new user account with email and password.
+    /// Registers a new user account with the provided email and password.
     /// </summary>
+    /// <param name="model">The registration details including username, email, and password.</param>
+    /// <returns>A tuple containing the auth response, success status, and any errors.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded, IEnumerable<IdentityError>? Errors)> RegisterUserAsync(RegisterDto model)
     {
         var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
@@ -80,9 +82,10 @@ public class AuthService(
     }
 
     /// <summary>
-    /// Authenticate a user with email and password.
-    /// Implements timing attack mitigation by adding random delays on failure.
+    /// Authenticates a user with email and password credentials.
     /// </summary>
+    /// <param name="model">The login credentials (email and password).</param>
+    /// <returns>A tuple containing the auth response and success status.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model)
     {
         var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
@@ -142,10 +145,11 @@ public class AuthService(
     }
 
     /// <summary>
-    /// Handle Google OAuth callback.
-    /// Orchestrates the complete OAuth flow including token exchange, user creation/lookup,
-    /// refresh token storage, and JWT generation.
+    /// Handles the Google OAuth callback process.
     /// </summary>
+    /// <param name="authorizationCode">The authorization code received from Google.</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation.</param>
+    /// <returns>A tuple containing the auth response and success status.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded)> GoogleCallbackAsync(string authorizationCode, CancellationToken cancellationToken)
     {
         var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
