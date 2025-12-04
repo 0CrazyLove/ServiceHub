@@ -1,0 +1,42 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+WORKDIR /src
+
+# Copy the project file
+COPY Backend.csproj .
+
+# Restore dependencies
+RUN dotnet restore "Backend.csproj"
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the application
+RUN dotnet build "Backend.csproj" -c Release -o /app/build
+
+# Publish stage
+FROM build AS publish
+RUN dotnet publish "Backend.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
+WORKDIR /app
+
+# Copy published application
+COPY --from=publish /app/publish .
+
+# Expose port
+EXPOSE 5000
+
+# Environment variables (can be overridden in docker-compose)
+ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD dotnet /app/Backend.dll --health-check || exit 1
+
+# Run the application
+ENTRYPOINT ["dotnet", "Backend.dll"]

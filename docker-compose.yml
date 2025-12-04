@@ -25,7 +25,7 @@ services:
   # .NET Backend API
   backend:
     build:
-      context: .
+      context: ./Backend
       dockerfile: Dockerfile.backend
     container_name: servicehub_backend
     environment:
@@ -52,7 +52,7 @@ services:
   # Node.js Frontend (Astro)
   frontend:
     build:
-      context: .
+      context: ./Frontend
       dockerfile: Dockerfile.frontend
     container_name: servicehub_frontend
     environment:
