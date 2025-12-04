@@ -46,6 +46,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthEndpoints();
 
 app.Run();
 
