@@ -18,14 +18,14 @@ public class UserGoogleToken
     /// Gets or sets the user ID this token belongs to.
     /// References the AspNetUsers table.
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public string? UserId { get; set; }
 
     /// <summary>
     /// Gets or sets the Google refresh token.
     /// This token is used to obtain new access tokens when the current one expires.
     /// Must be stored securely and never exposed to the client.
     /// </summary>
-    public string RefreshToken { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; } 
 
     /// <summary>
     /// Gets or sets the UTC timestamp when the refresh token expires.
