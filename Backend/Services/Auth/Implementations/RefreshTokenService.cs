@@ -18,7 +18,7 @@ public class RefreshTokenService(AppDbContext context, ILogger<RefreshTokenServi
     {
         var existingToken = await context.UserGoogleTokens.FirstOrDefaultAsync(t => t.UserId == userId, cancellationToken);
 
-        if (existingToken != null)
+        if (existingToken is not null)
         {
             existingToken.RefreshToken = refreshToken;
             existingToken.ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
