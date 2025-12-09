@@ -28,9 +28,9 @@ public class DashboardController(IDashboardService dashboardService) : Controlle
     /// </summary>
     /// <returns>DashboardStatsDto containing platform statistics.</returns>
     [HttpGet("stats")]
-    public async Task<ActionResult<DashboardStatsDto>> GetStats()
+    public async Task<ActionResult<DashboardStatsDto>> GetStatsAsync(CancellationToken cancellationToken)
     {
-        var stats = await dashboardService.GetDashboardStatsAsync();
+        var stats = await dashboardService.GetDashboardStatsAsync(cancellationToken);
         return Ok(stats);
     }
 }

@@ -16,11 +16,11 @@ public class DashboardService(AppDbContext context) : IDashboardService
     /// Retrieves aggregated dashboard statistics including sales and counts.
     /// </summary>
     /// <returns>A DTO containing the calculated platform statistics.</returns>
-    public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+    public async Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken cancellationToken)
     {
-        var totalSales = await context.Orders.SumAsync(o => o.TotalAmount);
-        var serviceCount = await context.Services.CountAsync();
-        var orderCount = await context.Orders.CountAsync();
+        var totalSales = await context.Orders.SumAsync(o => o.TotalAmount, cancellationToken);
+        var serviceCount = await context.Services.CountAsync(cancellationToken);
+        var orderCount = await context.Orders.CountAsync(cancellationToken);
 
         return new DashboardStatsDto
         {

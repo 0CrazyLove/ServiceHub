@@ -16,5 +16,5 @@ public interface IDashboardService
     /// service count, and order count.
     /// </summary>
     /// <returns>DashboardStatsDto containing aggregated platform metrics.</returns>
-    Task<DashboardStatsDto> GetDashboardStatsAsync();
+    Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken cancellationToken);
 }
