@@ -58,6 +58,8 @@ services:
     build:
       context: ./Frontend
       dockerfile: Dockerfile.frontend
+      args:
+        PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     container_name: servicehub_frontend
     environment:
       - NODE_ENV=production

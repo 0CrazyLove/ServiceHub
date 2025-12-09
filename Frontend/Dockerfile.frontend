@@ -15,6 +15,11 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Accept build argument for Google Client ID
+ARG PUBLIC_GOOGLE_CLIENT_ID
+# Set as environment variable for the build process
+ENV PUBLIC_GOOGLE_CLIENT_ID=$PUBLIC_GOOGLE_CLIENT_ID
+
 # Build the Astro application
 RUN pnpm run build
 
