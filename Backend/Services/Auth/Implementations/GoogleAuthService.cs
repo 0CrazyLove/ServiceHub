@@ -204,7 +204,6 @@ ILogger<GoogleAuthService> logger, UserManager<IdentityUser> userManager) : IGoo
 
             if (existingClaim is not null)
             {
-                // If exists but value is different, we need to replace it
                 if (!string.Equals(existingClaim.Value, newValue, StringComparison.Ordinal))
                 {
                     claimsToRemove.Add(existingClaim);
@@ -213,7 +212,6 @@ ILogger<GoogleAuthService> logger, UserManager<IdentityUser> userManager) : IGoo
             }
             else
             {
-                // If it doesn't exist, add it
                 claimsToAdd.Add(new(type, newValue));
             }
         }
