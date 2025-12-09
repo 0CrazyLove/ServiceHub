@@ -1,7 +1,7 @@
 ---
 /**
  * Root layout component for all pages.
- * 
+ *
  * Provides the HTML structure, metadata, and styling foundation
  * for the entire application. Wraps page content with consistent
  * theming and responsive viewport settings.
@@ -15,6 +15,12 @@
     <link rel="icon" type="image/svg+xml" href="/Isometrical.ico" />
     <meta name="generator" content={Astro.generator} />
     <title>ServiceHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body class="bg-primary-darkest text-primary-lightest">
     <slot />

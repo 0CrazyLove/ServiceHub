@@ -81,7 +81,7 @@ export default function Services() {
    * @private
    */
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category === 'All' ? '' : category);
+    setSelectedCategory(category === 'Todas' ? '' : category);
     setCurrentPage(1);
   };
 
@@ -166,12 +166,11 @@ export default function Services() {
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm ${
-                (category === 'All' && !selectedCategory) ||
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm ${(category === 'Todas' && !selectedCategory) ||
                 selectedCategory === category
-                  ? 'bg-primary-accent text-white shadow-md'
-                  : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-              }`}
+                ? 'bg-primary-accent text-white shadow-md'
+                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
+                }`}
             >
               {category}
             </button>
@@ -182,41 +181,37 @@ export default function Services() {
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           <button
             onClick={() => handlePriceFilter({ min: null, max: null })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${
-              priceRange.min === null && priceRange.max === null
-                ? 'bg-primary-accent text-white'
-                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === null && priceRange.max === null
+              ? 'bg-primary-accent text-white'
+              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
+              }`}
           >
             Todos los precios
           </button>
           <button
             onClick={() => handlePriceFilter({ min: null, max: 100 })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${
-              priceRange.max === 100
-                ? 'bg-primary-accent text-white'
-                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.max === 100
+              ? 'bg-primary-accent text-white'
+              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
+              }`}
           >
             Menos de $100
           </button>
           <button
             onClick={() => handlePriceFilter({ min: 100, max: 300 })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${
-              priceRange.min === 100 && priceRange.max === 300
-                ? 'bg-primary-accent text-white'
-                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === 100 && priceRange.max === 300
+              ? 'bg-primary-accent text-white'
+              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
+              }`}
           >
             $100 - $300
           </button>
           <button
             onClick={() => handlePriceFilter({ min: 300, max: null })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${
-              priceRange.min === 300
-                ? 'bg-primary-accent text-white'
-                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-            }`}
+            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === 300
+              ? 'bg-primary-accent text-white'
+              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
+              }`}
           >
             Más de $300
           </button>
@@ -244,16 +239,16 @@ export default function Services() {
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                      <div className="w-full h-full flex items-center justify-center text-primary-accent">
+                    <div className="w-full h-full flex items-center justify-center text-primary-accent">
                       Sin imagen
                     </div>
                   )}
                   {/* Verified badge */}
-                      {service.verified && (
-                        <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                          ✓ Verificado
-                        </span>
-                      )}
+                  {service.verified && (
+                    <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      ✓ Verificado
+                    </span>
+                  )}
                   {/* Availability badge */}
                   {!service.available && (
                     <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
@@ -268,9 +263,9 @@ export default function Services() {
                     <h3 className="text-lg font-semibold text-primary-lightest mb-1">
                       {service.name}
                     </h3>
-                      <p className="text-primary-accent text-sm font-medium">
-                        por {service.provider}
-                      </p>
+                    <p className="text-primary-accent text-sm font-medium">
+                      por {service.provider}
+                    </p>
                   </div>
 
                   <p className="text-primary-light text-sm mb-4 line-clamp-2 flex-grow">
@@ -319,7 +314,7 @@ export default function Services() {
 
                   {/* Category badge */}
                   {service.category && (
-                    <span className="inline-block bg-primary-darkest text-primary-light text-xs px-3 py-1 rounded-full mb-4 border border-primary-medium">
+                    <span className="inline-block bg-primary-darkest text-primary-lightest text-xs px-3 py-1 rounded-full mb-4 border border-primary-medium self-start">
                       {service.category}
                     </span>
                   )}
@@ -327,11 +322,10 @@ export default function Services() {
                   {/* CTA button */}
                   <a
                     href={`/service/${service.id}`}
-                    className={`w-full inline-block text-center py-2.5 rounded-md font-medium transition-all duration-200 ${
-                      service.available
-                        ? 'bg-primary-accent text-white hover:bg-opacity-80'
-                        : 'bg-primary-medium text-primary-light cursor-not-allowed'
-                    }`}
+                    className={`w-full inline-block text-center py-2.5 rounded-md font-medium transition-all duration-200 ${service.available
+                      ? 'bg-primary-accent text-white hover:bg-opacity-80'
+                      : 'bg-primary-medium text-primary-light cursor-not-allowed'
+                      }`}
                     aria-disabled={!service.available}
                   >
                     {service.available ? 'Ver detalles' : 'No disponible'}

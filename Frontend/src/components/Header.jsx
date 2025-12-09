@@ -139,11 +139,11 @@ export default function Header() {
     };
   }, [showProfileMenu]);
 
-/**
-   * Skeleton/placeholder header while component hydrates on client.
-   * Maintains same structure as mounted component to prevent layout shift.
-   * Shows loading state instead of auth buttons to prevent flash.
-   */
+  /**
+     * Skeleton/placeholder header while component hydrates on client.
+     * Maintains same structure as mounted component to prevent layout shift.
+     * Shows loading state instead of auth buttons to prevent flash.
+     */
   if (!mounted) {
     return (
       <header className="bg-primary-dark shadow-md">
@@ -226,6 +226,25 @@ export default function Header() {
             </a>
           )}
         </nav>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-8xl mx-4 hidden md:block">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar servicios..."
+              className="w-full bg-primary-medium/30 text-primary-lightest placeholder-primary-light/50 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-primary-accent border border-primary-light/10 transition-all focus:bg-primary-medium/50"
+            />
+            <svg
+              className="w-4 h-4 text-primary-light/50 absolute left-3.5 top-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
         {/* Right side: cart and auth */}
         <div className="flex items-center gap-3 ml-auto">
           <CartIcon />

@@ -35,7 +35,6 @@ builder.Services.AddApplicationServices();
 
 // Add controllers
 builder.Services.AddControllers();
-
 var app = builder.Build();
 
 // Seed database on startup

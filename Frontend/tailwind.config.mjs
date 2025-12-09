@@ -21,12 +21,15 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				'primary-darkest': '#06141B',
-				'primary-dark': '#11212D',
-				'primary-medium': '#253745',
-				'primary-accent': '#4A5C6A',
-				'primary-light': '#9BA8AB',
-				'primary-lightest': '#CCD0CF',
+				'primary-darkest': '#313131',
+				'primary-dark': '#414141',
+				'primary-medium': '#525252',
+				'primary-accent': '#EC625F',
+				'primary-light': '#D4D4D4',
+				'primary-lightest': '#FAFAFA',
+			},
+			fontFamily: {
+				sans: ['Poppins', 'sans-serif'],
 			},
 		},
 	},
