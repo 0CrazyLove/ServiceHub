@@ -1,7 +1,6 @@
-using Backend.Data;
 using Backend.DTOs.Dashboard;
 using Backend.Services.Dashboard.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Backend.Repository.Interfaces;
 
 namespace Backend.Services.Dashboard.Implementations;
 
@@ -10,7 +9,9 @@ namespace Backend.Services.Dashboard.Implementations;
 /// 
 /// Aggregates data from orders and services to provide KPIs for administrators.
 /// </summary>
-public class DashboardService(AppDbContext context) : IDashboardService
+/// <param name="orderRepository">The repository for accessing order data.</param>
+/// <param name="serviceRepository">The repository for accessing service data.</param>
+public class DashboardService(IOrderRepository orderRepository, IServiceRepository serviceRepository) : IDashboardService
 {
     /// <summary>
     /// Retrieves aggregated dashboard statistics including sales and counts.
@@ -18,9 +19,9 @@ public class DashboardService(AppDbContext context) : IDashboardService
     /// <returns>A DTO containing the calculated platform statistics.</returns>
     public async Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken cancellationToken)
     {
-        var totalSales = await context.Orders.SumAsync(o => o.TotalAmount, cancellationToken);
-        var serviceCount = await context.Services.CountAsync(cancellationToken);
-        var orderCount = await context.Orders.CountAsync(cancellationToken);
+        var totalSales = await orderRepository.GetTotalSalesAsync(cancellationToken);
+        var serviceCount = await serviceRepository.GetCountAsync(cancellationToken);
+        var orderCount = await orderRepository.GetCountAsync(cancellationToken);
 
         return new DashboardStatsDto
         {

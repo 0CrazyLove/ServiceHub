@@ -1,9 +1,8 @@
-using Backend.Data;
 using Backend.Models;
 using Backend.DTOs.Services;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Backend.Services.Business.Interfaces;
+using Backend.Repository.Interfaces;
 
 namespace Backend.Services.Business.Implemetations;
 
@@ -13,7 +12,8 @@ namespace Backend.Services.Business.Implemetations;
 /// Handles service queries with filtering and pagination, CRUD operations,
 /// and category discovery. Manages JSON serialization for language storage.
 /// </summary>
-public class ServicesService(AppDbContext context) : IServicesService
+/// <param name="repository">The repository for accessing service data.</param>
+public class ServicesService(IServiceRepository repository) : IServicesService
 {
     /// <summary>
     /// Retrieves a paginated list of services with optional filtering by category and price.
@@ -24,44 +24,12 @@ public class ServicesService(AppDbContext context) : IServicesService
     /// <param name="minPrice">The minimum price filter (optional).</param>
     /// <param name="maxPrice">The maximum price filter (optional).</param>
     /// <returns>A DTO containing the list of services and pagination metadata.</returns>
-    public async Task<PaginatedServicesDto> GetServices(
-        string? category, 
-        int page, 
-        int pageSize,
-        decimal? minPrice,
-        decimal? maxPrice)
+    public async Task<PaginatedServicesDto> GetServices(string? category, int page, int pageSize,decimal? minPrice,decimal? maxPrice)
     {
-        var query = context.Services.AsQueryable();
+        var (items, totalCount) = await repository.GetServicesAsync(category, page, pageSize, minPrice, maxPrice);
         
-        // Apply category filter if specified
-        if (!string.IsNullOrEmpty(category))
-        {
-            query = query.Where(s => s.Category == category);
-        }
-        
-        // Apply minimum price filter if specified
-        if (minPrice.HasValue)
-        {
-            query = query.Where(s => s.Price >= minPrice.Value);
-        }
-        
-        // Apply maximum price filter if specified
-        if (maxPrice.HasValue)
-        {
-            query = query.Where(s => s.Price <= maxPrice.Value);
-        }
-        
-        var totalCount = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-        
-        // Fetch the requested page, sorted by creation date descending
-        var services = await query
-            .OrderByDescending(s => s.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        
-        var serviceDtos = services.Select(MapToResponseDto).ToList();
+        var serviceDtos = items.Select(MapToResponseDto).ToList();
         
         return new PaginatedServicesDto
         {
@@ -80,7 +48,7 @@ public class ServicesService(AppDbContext context) : IServicesService
     /// <returns>The service details if found; otherwise, null.</returns>
     public async Task<ServiceResponseDto?> GetServiceById(int id)
     {
-        var service = await context.Services.FindAsync(id);
+        var service = await repository.GetByIdAsync(id);
         return service == null ? null : MapToResponseDto(service);
     }
 
@@ -111,8 +79,8 @@ public class ServicesService(AppDbContext context) : IServicesService
             UpdatedAt = DateTime.UtcNow
         };
         
-        context.Services.Add(newService);
-        await context.SaveChangesAsync();
+        await repository.AddAsync(newService);
+        await repository.SaveChangesAsync();
         
         return MapToResponseDto(newService);
     }
@@ -125,7 +93,7 @@ public class ServicesService(AppDbContext context) : IServicesService
     /// <returns>The updated service details if found; otherwise, null.</returns>
     public async Task<ServiceResponseDto?> UpdateService(int id, ServiceDto serviceDto)
     {
-        var service = await context.Services.FindAsync(id);
+        var service = await repository.GetByIdAsync(id);
         if (service == null) return null;
         
         service.Name = serviceDto.Name;
@@ -144,7 +112,7 @@ public class ServicesService(AppDbContext context) : IServicesService
         service.Languages = JsonSerializer.Serialize(serviceDto.Languages);
         service.UpdatedAt = DateTime.UtcNow;
         
-        await context.SaveChangesAsync();
+        await repository.SaveChangesAsync();
         
         return MapToResponseDto(service);
     }
@@ -156,11 +124,11 @@ public class ServicesService(AppDbContext context) : IServicesService
     /// <returns>True if the service was deleted; false if not found.</returns>
     public async Task<bool> DeleteService(int id)
     {
-        var service = await context.Services.FindAsync(id);
+        var service = await repository.GetByIdAsync(id);
         if (service == null) return false;
         
-        context.Services.Remove(service);
-        await context.SaveChangesAsync();
+        repository.Remove(service);
+        await repository.SaveChangesAsync();
         
         return true;
     }
@@ -171,12 +139,7 @@ public class ServicesService(AppDbContext context) : IServicesService
     /// <returns>A list of unique category names, sorted alphabetically.</returns>
     public async Task<IEnumerable<string>> GetCategories()
     {
-        return await context.Services
-            .Where(s => !string.IsNullOrEmpty(s.Category))
-            .Select(s => s.Category!)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
+        return await repository.GetCategoriesAsync();
     }
 
     /// <summary>

@@ -1,6 +1,5 @@
-using Backend.Data;
 using Backend.Models;
-using Microsoft.EntityFrameworkCore;
+using Backend.Repository.Interfaces;
 using Backend.Services.Auth.Interfaces;
 
 namespace Backend.Services.Auth.Implementations;
@@ -8,15 +7,17 @@ namespace Backend.Services.Auth.Implementations;
 /// <summary>
 /// Service responsible for managing Google refresh tokens in the database.
 /// </summary>
-public class RefreshTokenService(AppDbContext context, ILogger<RefreshTokenService> logger) : IRefreshTokenService
+/// <param name="repository">The repository for accessing refresh token data.</param>
+/// <param name="logger">The logger instance.</param>
+public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<RefreshTokenService> logger) : IRefreshTokenService
 {
     /// <summary>
     /// Store or update Google refresh token for a user.
     /// Creates new record or updates existing one with new token and expiration time.
     /// </summary>
-    public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn, CancellationToken cancellationToken)
+    public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn, CancellationToken cancellationToken = default)
     {
-        var existingToken = await context.UserGoogleTokens.FirstOrDefaultAsync(t => t.UserId == userId, cancellationToken);
+        var existingToken = await repository.GetByUserIdAsync(userId, cancellationToken);
 
         if (existingToken is not null)
         {
@@ -33,10 +34,10 @@ public class RefreshTokenService(AppDbContext context, ILogger<RefreshTokenServi
                 ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn),
                 CreatedAt = DateTime.UtcNow
             };
-            await context.UserGoogleTokens.AddAsync(newToken, cancellationToken);
+            await repository.AddAsync(newToken);
             logger.LogDebug("Created new refresh token for user: {UserId}", userId);
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
     }
 }

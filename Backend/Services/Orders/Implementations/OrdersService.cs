@@ -1,8 +1,7 @@
-using Backend.Data;
 using Backend.DTOs.Orders;
 using Backend.Models;
 using Backend.Services.Orders.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Backend.Repository.Interfaces;
 
 namespace Backend.Services.Orders.Implementations;
 
@@ -12,19 +11,15 @@ namespace Backend.Services.Orders.Implementations;
 /// Handles order creation, retrieval, and transformation to DTOs.
 /// Ensures service availability validation and accurate pricing calculation.
 /// </summary>
-public class OrdersService(AppDbContext context) : IOrdersService
+/// <param name="orderRepository">The repository for accessing order data.</param>
+/// <param name="serviceRepository">The repository for accessing service data.</param>
+public class OrdersService(IOrderRepository orderRepository, IServiceRepository serviceRepository) : IOrdersService
 {
-    /// <summary>
-    /// Retrieves all orders with their associated items and services.
-    /// </summary>
-    /// <returns>A collection of order DTOs containing order details.</returns>
-    public async Task<IEnumerable<OrderResponseDto>> GetOrdersAsync()
+    /// <inheritdoc />
+    public async Task<IEnumerable<OrderResponseDto>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        var orders = await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Service)
-            .ToListAsync();
-            
+        var orders = await orderRepository.GetOrdersWithItemsAsync(cancellationToken);
+
         return orders.Select(o => new OrderResponseDto
         {
             Id = o.Id,
@@ -41,42 +36,29 @@ public class OrdersService(AppDbContext context) : IOrdersService
         }).ToList();
     }
 
-    /// <summary>
-    /// Retrieves a specific order by its unique identifier.
-    /// </summary>
-    /// <param name="id">The ID of the order to retrieve.</param>
-    /// <returns>The order entity if found; otherwise, null.</returns>
-    public async Task<Order?> GetOrderByIdAsync(int id)
+    /// <inheritdoc />
+    public async Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Service)
-            .FirstOrDefaultAsync(o => o.Id == id);
+        return await orderRepository.GetOrderByIdWithItemsAsync(id, cancellationToken);
     }
 
-    /// <summary>
-    /// Creates a new order for the specified user after validating services.
-    /// </summary>
-    /// <param name="orderDto">The order details including items and quantities.</param>
-    /// <param name="userId">The ID of the user placing the order.</param>
-    /// <returns>The created order details as a DTO.</returns>
-    public async Task<OrderResponseDto> CreateOrderAsync(OrderDto orderDto, string userId)
+    /// <inheritdoc />
+    public async Task<OrderResponseDto> CreateOrderAsync(OrderDto orderDto, string userId, CancellationToken cancellationToken = default)
     {
         // Fetch all services in one query for efficiency
         var serviceIds = orderDto.OrderItems.Select(i => i.ServiceId).ToList();
-        var services = await context.Services
-            .Where(s => serviceIds.Contains(s.Id))
-            .ToDictionaryAsync(s => s.Id);
-        
+        var servicesList = await serviceRepository.GetByIdsAsync(serviceIds, cancellationToken);
+        var services = servicesList.ToDictionary(s => s.Id);
+
         var newOrder = new Order
         {
             UserId = userId,
             OrderDate = DateTime.UtcNow,
             OrderItems = []
         };
-        
+
         decimal totalAmount = 0;
-        
+
         // Add order items, validating service availability
         foreach (var itemDto in orderDto.OrderItems)
         {
@@ -89,16 +71,16 @@ public class OrdersService(AppDbContext context) : IOrdersService
                     Quantity = itemDto.Quantity,
                     Price = service.Price
                 };
-                
+
                 newOrder.OrderItems.Add(orderItem);
                 totalAmount += orderItem.Quantity * orderItem.Price;
             }
         }
-        
+
         newOrder.TotalAmount = totalAmount;
-        context.Orders.Add(newOrder);
-        await context.SaveChangesAsync();
-        
+        await orderRepository.AddAsync(newOrder,cancellationToken);
+        await orderRepository.SaveChangesAsync(cancellationToken);
+
         // Transform to DTO for response
         var response = new OrderResponseDto
         {
@@ -114,7 +96,7 @@ public class OrdersService(AppDbContext context) : IOrdersService
                 Price = oi.Price
             })]
         };
-        
+
         return response;
     }
 }
