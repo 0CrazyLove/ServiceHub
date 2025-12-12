@@ -23,6 +23,7 @@ public class OrdersService(IOrderRepository orderRepository, IServiceRepository 
         return orders.Select(o => new OrderResponseDto
         {
             Id = o.Id,
+            UserId = o.UserId,
             OrderDate = o.OrderDate,
             TotalAmount = o.TotalAmount,
             OrderItems = o.OrderItems.Select(oi => new OrderItemResponseDto
@@ -85,6 +86,7 @@ public class OrdersService(IOrderRepository orderRepository, IServiceRepository 
         var response = new OrderResponseDto
         {
             Id = newOrder.Id,
+            UserId = newOrder.UserId,
             OrderDate = newOrder.OrderDate,
             TotalAmount = newOrder.TotalAmount,
             OrderItems = [..newOrder.OrderItems.Select(oi => new OrderItemResponseDto

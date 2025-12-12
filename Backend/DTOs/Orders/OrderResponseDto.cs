@@ -11,6 +11,11 @@ public class OrderResponseDto
     public int Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the user ID associated with the order.
+    /// </summary>
+    public string? UserId { get; set; }
+
+    /// <summary>
     /// Gets or sets the UTC timestamp when the order was placed.
     /// </summary>
     public DateTime OrderDate { get; set; }
