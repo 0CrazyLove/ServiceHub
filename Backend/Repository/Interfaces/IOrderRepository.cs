@@ -1,3 +1,4 @@
+using Backend.DTOs.Orders;
 using Backend.Models;
 
 namespace Backend.Repository.Interfaces;
@@ -11,14 +12,7 @@ public interface IOrderRepository : IRepository<Order>
     /// Retrieves all orders including their associated items and services.
     /// </summary>
     /// <returns>A collection of orders with full details.</returns>
-    Task<IEnumerable<Order>> GetOrdersWithItemsAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves a specific order by its ID, including items and services.
-    /// </summary>
-    /// <param name="id">The unique identifier of the order.</param>
-    /// <returns>The order with details if found; otherwise, null.</returns>
-    Task<Order?> GetOrderByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<OrderResponseDto>> GetOrdersWithItemsAsDtoAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Calculates the total sales amount from all orders.

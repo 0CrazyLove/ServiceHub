@@ -2,6 +2,7 @@ using Backend.DTOs.Orders;
 using Backend.Models;
 using Backend.Services.Orders.Interfaces;
 using Backend.Repository.Interfaces;
+using System.Security.Claims;
 
 namespace Backend.Services.Orders.Implementations;
 
@@ -13,44 +14,23 @@ namespace Backend.Services.Orders.Implementations;
 /// </summary>
 /// <param name="orderRepository">The repository for accessing order data.</param>
 /// <param name="serviceRepository">The repository for accessing service data.</param>
-public class OrdersService(IOrderRepository orderRepository, IServiceRepository serviceRepository) : IOrdersService
+public class OrdersService(IOrderRepository orderRepository, IServiceRepository serviceRepository, IHttpContextAccessor httpContextAccessor) : IOrdersService
 {
     /// <inheritdoc />
     public async Task<IEnumerable<OrderResponseDto>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        var orders = await orderRepository.GetOrdersWithItemsAsync(cancellationToken);
-
-        return orders.Select(o => new OrderResponseDto
-        {
-            Id = o.Id,
-            UserId = o.UserId,
-            OrderDate = o.OrderDate,
-            TotalAmount = o.TotalAmount,
-            OrderItems = o.OrderItems.Select(oi => new OrderItemResponseDto
-            {
-                Id = oi.Id,
-                ServiceId = oi.ServiceId,
-                ServiceName = oi.Service?.Name,
-                Quantity = oi.Quantity,
-                Price = oi.Price
-            }).ToList()
-        }).ToList();
+        return await orderRepository.GetOrdersWithItemsAsDtoAsync(cancellationToken);
     }
-
+    
     /// <inheritdoc />
-    public async Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await orderRepository.GetOrderByIdWithItemsAsync(id, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<OrderResponseDto> CreateOrderAsync(OrderDto orderDto, string userId, CancellationToken cancellationToken = default)
+    public async Task<OrderResponseDto> CreateOrderAsync(OrderDto orderDto, CancellationToken cancellationToken = default)
     {
         // Fetch all services in one query for efficiency
         var serviceIds = orderDto.OrderItems.Select(i => i.ServiceId).ToList();
         var servicesList = await serviceRepository.GetByIdsAsync(serviceIds, cancellationToken);
         var services = servicesList.ToDictionary(s => s.Id);
-
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
         var newOrder = new Order
         {
             UserId = userId,

@@ -3,7 +3,6 @@ using Backend.Models;
 using Backend.DTOs.Orders;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Services.Orders.Interfaces;
-using System.Security.Claims;
 
 namespace Backend.Controllers.Api;
 
@@ -26,33 +25,10 @@ public class OrdersController(IOrdersService ordersService) : ControllerBase
     /// <returns>A collection of OrderResponseDto objects representing all orders.</returns>
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+    public async Task<ActionResult<IEnumerable<Order>>> GetOrdersAsync()
     {
         var orders = await ordersService.GetOrdersAsync();
         return Ok(orders);
-    }
-
-    /// <summary>
-    /// Retrieve a specific order by ID.
-    /// 
-    /// Requires authentication.
-    /// In production, should verify that the requesting user owns the order.
-    /// </summary>
-    /// <param name="id">The order ID to retrieve.</param>
-    /// <returns>
-    /// Returns 200 OK with OrderResponseDto if found.
-    /// Returns 404 Not Found if order does not exist.
-    /// </returns>
-    [HttpGet("{id}")]
-    [Authorize]
-    public async Task<ActionResult<Order>> GetOrder(int id)
-    {
-        var order = await ordersService.GetOrderByIdAsync(id);
-        if (order == null)
-        {
-            return NotFound();
-        }
-        return Ok(order);
     }
 
     /// <summary>
@@ -69,10 +45,10 @@ public class OrdersController(IOrdersService ordersService) : ControllerBase
     /// </returns>
     [HttpPost]
     [Authorize(Policy = "CustomerPolicy")]
-    public async Task<ActionResult<Order>> CreateOrder(OrderDto orderDto)
+    public async Task<ActionResult<Order>> CreateOrderAsync(OrderDto orderDto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var newOrder = await ordersService.CreateOrderAsync(orderDto, userId);
-        return CreatedAtAction(nameof(GetOrder), new { id = newOrder.Id }, newOrder);
+        var newOrder = await ordersService.CreateOrderAsync(orderDto);
+
+        return StatusCode(201, newOrder);
     }
 }

@@ -11,6 +11,7 @@ using Backend.Services.Database.Implementations;
 using Backend.Services.Database.Interfaces;
 using Backend.Repository.Interfaces;
 using Backend.Repository.Implementations;
+using Microsoft.AspNetCore.Http;
 
 namespace Backend.Extensions;
 
@@ -23,6 +24,9 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        // Infrastructure/Framework services
+        services.AddHttpContextAccessor();
+
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -44,7 +48,7 @@ public static class ServiceCollectionExtensions
         // Configuration settings
         services.AddSingleton<JwtSettings>();
         services.AddSingleton<GoogleSettings>();
-
+        
         return services;
     }
 }
