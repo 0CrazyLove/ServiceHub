@@ -318,28 +318,6 @@ export async function getOrders(token) {
 }
 
 /**
- * Retrieve a specific order by ID.
- * 
- * @param {number} id - The order ID
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} Order details including items and pricing
- */
-export async function getOrderById(id, token) {
-  try {
-    const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const response = await fetch(`${API_URL}/orders/${id}`, {
-      method: 'GET',
-      headers
-    });
-    return await handleResponse(response);
-  } catch (error) {
-    console.error(`Error fetching order ${id}:`, error);
-    throw error;
-  }
-}
-
-/**
  * Create a new order with the specified services.
  * 
  * Requires authentication with Customer role. Services must be available and exist.
