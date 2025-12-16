@@ -274,7 +274,7 @@ export default function Dashboard() {
                                   className="w-16 h-16 rounded object-cover mr-3 border border-primary-medium"
                                 />
                               )}
-                              <span className="text-sm">{item.serviceName} <span className="text-primary-light/70">x{item.quantity}</span></span>
+                              <span className="text-sm">{item.serviceName} <span className="text-primary-light/70"></span></span>
                             </div>
                           )
                         })}
