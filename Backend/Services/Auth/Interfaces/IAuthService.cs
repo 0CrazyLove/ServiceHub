@@ -21,7 +21,7 @@ public interface IAuthService
     /// - AuthResponseDto with JWT token if registration succeeds (null if fails)
     /// - Boolean indicating success or failure
     /// </returns>
-    Task<(AuthResponseDto? response, bool succeeded,IEnumerable<IdentityError>? Errors)> RegisterUserAsync(RegisterDto model);
+    Task<(AuthResponseDto? response, bool succeeded)> RegisterUserAsync(RegisterDto model);
 
     /// <summary>
     /// Authenticate a user with email and password credentials.

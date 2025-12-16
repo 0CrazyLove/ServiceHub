@@ -2,6 +2,7 @@ using Backend.DTOs.Auth;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Backend.Services.Auth.Interfaces;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Backend.Services.Auth.Implementations;
 
@@ -22,7 +23,7 @@ public class AuthService(
     /// </summary>
     /// <param name="model">The registration details including username, email, and password.</param>
     /// <returns>A tuple containing the auth response, success status, and any errors.</returns>
-    public async Task<(AuthResponseDto? response, bool succeeded, IEnumerable<IdentityError>? Errors)> RegisterUserAsync(RegisterDto model)
+    public async Task<(AuthResponseDto? response, bool succeeded)> RegisterUserAsync(RegisterDto model)
     {
         var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
 
@@ -41,9 +42,9 @@ public class AuthService(
             if (!result.Succeeded)
             {
                 var errorCodes = string.Join(", ", result.Errors.Select(e => e.Code));
-                logger.LogWarning("Failed to create user {UserName}. Errors: {ErrorCodes}, CorrelationId: {CorrelationId}",
-                    model.UserName, errorCodes, correlationId);
-                return (null, false, result.Errors);
+                logger.LogWarning("Failed to create user {UserName}. Errors: {ErrorCodes}, CorrelationId: {CorrelationId}", model.UserName, errorCodes, correlationId);
+                await Task.Delay(Random.Shared.Next(100, 300));
+                return (null, false);
             }
 
             await userManager.AddToRoleAsync(user, "Customer");
@@ -58,26 +59,15 @@ public class AuthService(
                 Roles = roles
             };
 
-            logger.LogInformation("Registration successful. UserId: {UserId}, Roles: {RoleCount}, CorrelationId: {CorrelationId}",
-                user.Id, roles.Count, correlationId);
+            logger.LogInformation("Registration successful. UserId: {UserId}, Roles: {RoleCount}, CorrelationId: {CorrelationId}", user.Id, roles.Count, correlationId);
 
-            return (response, true, null);
+            return (response, true);
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Critical error during registration: {UserName}, CorrelationId: {CorrelationId}",
-                model.UserName, correlationId);
-
-            var errors = new List<IdentityError>
-            {
-                new()
-                {
-                    Code = "RegistrationError",
-                    Description = "An error occurred during registration. Please try again."
-                }
-            };
-
-            return (null, false, errors);
+            logger.LogError(ex, "Error during registration: {UserName}, CorrelationId: {CorrelationId}", model.UserName, correlationId);
+            await Task.Delay(Random.Shared.Next(100, 300));
+            return (null, false);
         }
     }
 
@@ -115,8 +105,7 @@ public class AuthService(
             if (!result.Succeeded)
             {
                 var reason = result.IsLockedOut ? "Lockout" : result.IsNotAllowed ? "NotAllowed" : "InvalidCredentials";
-                logger.LogWarning("Login failed. Reason: {Reason}, UserId: {UserId}, CorrelationId: {CorrelationId}",
-                    reason, user.Id, correlationId);
+                logger.LogWarning("Login failed. Reason: {Reason}, UserId: {UserId}, CorrelationId: {CorrelationId}", reason, user.Id, correlationId);
                 await Task.Delay(Random.Shared.Next(100, 300));
                 return (null, false);
             }
@@ -133,12 +122,11 @@ public class AuthService(
             };
 
             logger.LogInformation("Login successful for user {UserId} with {RoleCount} role(s). CorrelationId: {CorrelationId}", user.Id, roles.Count, correlationId);
-
             return (response, true);
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Critical error during login. CorrelationId: {CorrelationId}", correlationId);
+            logger.LogError(ex, "Critical error during login. CorrelationId: {CorrelationId}", correlationId);
             await Task.Delay(Random.Shared.Next(100, 300));
             return (null, false);
         }
@@ -158,11 +146,12 @@ public class AuthService(
 
         try
         {
-            var tokenResponse = await googleAuthService.ExchangeCodeForTokensAsync(authorizationCode , cancellationToken);
+            var tokenResponse = await googleAuthService.ExchangeCodeForTokensAsync(authorizationCode, cancellationToken);
 
             if (string.IsNullOrEmpty(tokenResponse.IdToken))
             {
                 logger.LogWarning("Google token response missing ID token. CorrelationId: {CorrelationId}", correlationId);
+                await Task.Delay(Random.Shared.Next(100, 300));
                 return (null, false);
             }
             var userInfo = await googleAuthService.DecodeAndValidateIdTokenAsync(tokenResponse.IdToken, cancellationToken);
@@ -171,13 +160,14 @@ public class AuthService(
 
             if (user is null)
             {
-                logger.LogError("Failed to find or create Google user for email: {Email}. CorrelationId: {CorrelationId}", userInfo.Email, correlationId);
+                logger.LogWarning("Failed to find or create Google user for email: {Email}. CorrelationId: {CorrelationId}", userInfo.Email, correlationId);
+                await Task.Delay(Random.Shared.Next(100, 300));
                 return (null, false);
             }
 
             if (!string.IsNullOrEmpty(tokenResponse.RefreshToken))
             {
-                await refreshTokenService.SaveRefreshTokenAsync(user.Id, tokenResponse.RefreshToken, tokenResponse.ExpiresIn , cancellationToken);
+                await refreshTokenService.SaveRefreshTokenAsync(user.Id, tokenResponse.RefreshToken, tokenResponse.ExpiresIn, cancellationToken);
                 logger.LogDebug("Refresh token saved for user {UserId}. CorrelationId: {CorrelationId}", user.Id, correlationId);
             }
 
@@ -201,6 +191,7 @@ public class AuthService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error during Google OAuth callback. CorrelationId: {CorrelationId}", correlationId);
+            await Task.Delay(Random.Shared.Next(100, 300));
             return (null, false);
         }
     }

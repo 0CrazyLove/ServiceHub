@@ -27,12 +27,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
-        var (response, succeeded, errors) = await authService.RegisterUserAsync(model);
+        var (response, succeeded) = await authService.RegisterUserAsync(model);
 
-        if (!succeeded || response == null)
-        {
-            return BadRequest(new { errors = errors!.Select(e => e.Description) });
-        }
+        if (!succeeded || response is null) return Unauthorized(new { message = "Invalid credentials" });
 
         return Ok(response);
     }
@@ -50,7 +47,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var (response, succeeded) = await authService.LoginUserAsync(model);
 
-        if (!succeeded || response == null) return Unauthorized(new {message = "Invalid credentials"});
+        if (!succeeded || response is null) return Unauthorized(new { message = "Invalid credentials" });
 
         return Ok(response);
     }
@@ -70,17 +67,11 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("google/callback")]
     public async Task<IActionResult> GoogleCallback([FromBody] GoogleAuthCodeDto model, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(model.Code))
-        {
-            return BadRequest(new { message = "Authorization code is required" });
-        }
+        if (string.IsNullOrEmpty(model.Code)) return BadRequest(new { message = "Authorization code is required" });
 
         var (response, succeeded) = await authService.GoogleCallbackAsync(model.Code, cancellationToken);
 
-        if (!succeeded || response == null)
-        {
-            return Unauthorized(new { message = "Google authentication failed" });
-        }
+        if (!succeeded || response == null) return Unauthorized(new { message = "Google authentication failed" });
 
         return Ok(response);
     }
