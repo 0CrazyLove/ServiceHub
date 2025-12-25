@@ -31,14 +31,9 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// <returns>PaginatedServicesDto containing services and pagination metadata.</returns>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<PaginatedServicesDto>> GetServices(
-        [FromQuery] string? category, 
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 10,
-        [FromQuery] decimal? minPrice = null,
-        [FromQuery] decimal? maxPrice = null)
+    public async Task<ActionResult<PaginatedServicesResponseDto>> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null, CancellationToken cancellationToken = default)
     {
-        var paginatedServices = await servicesService.GetServices(category, page, pageSize, minPrice, maxPrice);
+        var paginatedServices = await servicesService.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
         return Ok(paginatedServices);
     }
 
@@ -54,11 +49,11 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// </returns>
     [HttpGet("{id}")]
     [AllowAnonymous]
-    public async Task<ActionResult<ServiceResponseDto>> GetService(int id)
+    public async Task<ActionResult<ServiceResponseDto>> GetServiceAsync(int id, CancellationToken cancellationToken)
     {
-        var service = await servicesService.GetServiceById(id);
-        if (service == null) return NotFound();
-        
+        var service = await servicesService.GetServiceByIdAsync(id, cancellationToken);
+        if (service is null) return NotFound();
+
         return Ok(service);
     }
 
@@ -71,9 +66,9 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// <returns>An enumerable collection of category names.</returns>
     [HttpGet("categories")]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
+    public async Task<ActionResult<IEnumerable<string>>> GetCategoriesAsync(CancellationToken cancellationToken)
     {
-        var categories = await servicesService.GetCategories();
+        var categories = await servicesService.GetCategoriesAsync(cancellationToken);
         return Ok(categories);
     }
 
@@ -89,13 +84,11 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// Returns 400 Bad Request if ModelState is invalid.
     /// </returns>
     [HttpPost]
-    public async Task<ActionResult<ServiceResponseDto>> CreateService(ServiceDto serviceDto)
+    public async Task<ActionResult<ServiceResponseDto>> CreateServiceAsync(ServiceDto serviceDto, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            
-        var newService = await servicesService.CreateService(serviceDto);
-        return CreatedAtAction(nameof(GetService), new { id = newService.Id }, newService);
+        var newService = await servicesService.CreateServiceAsync(serviceDto, cancellationToken);
+        if (newService is null) return BadRequest();
+        return CreatedAtAction(nameof(GetServiceAsync), new { id = newService.Id }, newService);
     }
 
     /// <summary>
@@ -112,15 +105,11 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// Returns 404 Not Found if service does not exist.
     /// </returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateService(int id, ServiceDto serviceDto)
+    public async Task<ActionResult<ServiceResponseDto>> UpdateServiceAsync(int id, ServiceDto serviceDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            
-        var updatedService = await servicesService.UpdateService(id, serviceDto);
-        if (updatedService == null)
-            return NotFound();
-        
+        var updatedService = await servicesService.UpdateServiceAsync(id, serviceDto);
+        if (updatedService is null) return NotFound();
+
         return Ok(updatedService);
     }
 
@@ -136,12 +125,11 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     /// Returns 404 Not Found if service does not exist.
     /// </returns>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteService(int id)
+    public async Task<ActionResult<bool>> DeleteServiceAsync(int id, CancellationToken cancellationToken)
     {
-        var result = await servicesService.DeleteService(id);
-        if (!result)
-            return NotFound();
-            
+        var result = await servicesService.DeleteServiceAsync(id, cancellationToken);
+        if (!result) return NotFound();
+
         return NoContent();
     }
 }

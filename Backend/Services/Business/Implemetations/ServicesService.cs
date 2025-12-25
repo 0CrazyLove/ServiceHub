@@ -1,6 +1,6 @@
+using AutoMapper;
 using Backend.Models;
 using Backend.DTOs.Services;
-using System.Text.Json;
 using Backend.Services.Business.Interfaces;
 using Backend.Repository.Interfaces;
 
@@ -13,7 +13,8 @@ namespace Backend.Services.Business.Implemetations;
 /// and category discovery. Manages JSON serialization for language storage.
 /// </summary>
 /// <param name="repository">The repository for accessing service data.</param>
-public class ServicesService(IServiceRepository repository) : IServicesService
+/// <param name="mapper">The AutoMapper instance for object mapping.</param>
+public class ServicesService(IServiceRepository repository, IMapper mapper) : IServicesService
 {
     /// <summary>
     /// Retrieves a paginated list of services with optional filtering by category and price.
@@ -24,14 +25,15 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// <param name="minPrice">The minimum price filter (optional).</param>
     /// <param name="maxPrice">The maximum price filter (optional).</param>
     /// <returns>A DTO containing the list of services and pagination metadata.</returns>
-    public async Task<PaginatedServicesDto> GetServices(string? category, int page, int pageSize,decimal? minPrice,decimal? maxPrice)
+    public async Task<PaginatedServicesResponseDto> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice, decimal? maxPrice,
+     CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetServicesAsync(category, page, pageSize, minPrice, maxPrice);
-        
+        var (items, totalCount) = await repository.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
+
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-        var serviceDtos = items.Select(MapToResponseDto).ToList();
-        
-        return new PaginatedServicesDto
+        var serviceDtos = mapper.Map<IList<ServiceResponseDto>>(items);
+
+        return new PaginatedServicesResponseDto
         {
             Items = serviceDtos,
             TotalPages = totalPages,
@@ -46,10 +48,10 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// </summary>
     /// <param name="id">The ID of the service to retrieve.</param>
     /// <returns>The service details if found; otherwise, null.</returns>
-    public async Task<ServiceResponseDto?> GetServiceById(int id)
+    public async Task<ServiceResponseDto?> GetServiceByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id);
-        return service == null ? null : MapToResponseDto(service);
+        var service = await repository.GetByIdAsync(id, cancellationToken);
+        return service is null ? null : mapper.Map<ServiceResponseDto>(service);
     }
 
     /// <summary>
@@ -57,32 +59,14 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// </summary>
     /// <param name="serviceDto">The service details to create.</param>
     /// <returns>The created service details.</returns>
-    public async Task<ServiceResponseDto> CreateService(ServiceDto serviceDto)
+    public async Task<ServiceResponseDto> CreateServiceAsync(ServiceDto serviceDto, CancellationToken cancellationToken = default)
     {
-        var newService = new Service
-        {
-            Name = serviceDto.Name,
-            Description = serviceDto.Description,
-            Price = serviceDto.Price,
-            PriceType = serviceDto.PriceType,
-            Category = serviceDto.Category,
-            Provider = serviceDto.Provider,
-            Rating = serviceDto.Rating,
-            ReviewCount = serviceDto.ReviewCount,
-            CompletedJobs = serviceDto.CompletedJobs,
-            DeliveryTime = serviceDto.DeliveryTime,
-            ImageUrl = serviceDto.ImageUrl,
-            Verified = serviceDto.Verified,
-            Available = serviceDto.Available,
-            Languages = JsonSerializer.Serialize(serviceDto.Languages),
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-        
-        await repository.AddAsync(newService);
-        await repository.SaveChangesAsync();
-        
-        return MapToResponseDto(newService);
+        var newService = mapper.Map<Service>(serviceDto);
+
+        await repository.AddAsync(newService, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+
+        return mapper.Map<ServiceResponseDto>(newService);
     }
 
     /// <summary>
@@ -91,30 +75,17 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// <param name="id">The ID of the service to update.</param>
     /// <param name="serviceDto">The updated service details.</param>
     /// <returns>The updated service details if found; otherwise, null.</returns>
-    public async Task<ServiceResponseDto?> UpdateService(int id, ServiceDto serviceDto)
+    public async Task<ServiceResponseDto?> UpdateServiceAsync(int id, ServiceDto serviceDto, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id);
-        if (service == null) return null;
+        var service = await repository.GetByIdAsync(id, cancellationToken);
         
-        service.Name = serviceDto.Name;
-        service.Description = serviceDto.Description;
-        service.Price = serviceDto.Price;
-        service.PriceType = serviceDto.PriceType;
-        service.Category = serviceDto.Category;
-        service.Provider = serviceDto.Provider;
-        service.Rating = serviceDto.Rating;
-        service.ReviewCount = serviceDto.ReviewCount;
-        service.CompletedJobs = serviceDto.CompletedJobs;
-        service.DeliveryTime = serviceDto.DeliveryTime;
-        service.ImageUrl = serviceDto.ImageUrl;
-        service.Verified = serviceDto.Verified;
-        service.Available = serviceDto.Available;
-        service.Languages = JsonSerializer.Serialize(serviceDto.Languages);
-        service.UpdatedAt = DateTime.UtcNow;
-        
-        await repository.SaveChangesAsync();
-        
-        return MapToResponseDto(service);
+        if (service is null) return null;
+
+        mapper.Map<ServiceResponseDto>(service);
+
+        await repository.SaveChangesAsync(cancellationToken);
+
+        return mapper.Map<ServiceResponseDto>(service);
     }
 
     /// <summary>
@@ -122,14 +93,14 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// </summary>
     /// <param name="id">The ID of the service to delete.</param>
     /// <returns>True if the service was deleted; false if not found.</returns>
-    public async Task<bool> DeleteService(int id)
+    public async Task<bool> DeleteServiceAsync(int id, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id);
-        if (service == null) return false;
-        
+        var service = await repository.GetByIdAsync(id, cancellationToken);
+        if (service is null) return false;
+
         repository.Remove(service);
-        await repository.SaveChangesAsync();
-        
+        await repository.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 
@@ -137,49 +108,8 @@ public class ServicesService(IServiceRepository repository) : IServicesService
     /// Retrieves all unique service categories available in the catalog.
     /// </summary>
     /// <returns>A list of unique category names, sorted alphabetically.</returns>
-    public async Task<IEnumerable<string>> GetCategories()
+    public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
-        return await repository.GetCategoriesAsync();
-    }
-
-    /// <summary>
-    /// Map Service entity to ServiceResponseDto.
-    /// 
-    /// Deserializes the JSON language string and handles any errors gracefully
-    /// by returning an empty list on deserialization failure.
-    /// </summary>
-    private static ServiceResponseDto MapToResponseDto(Service service)
-    {
-        List<string> languages;
-        try
-        {
-            languages = JsonSerializer.Deserialize<List<string>>(service.Languages) ?? new List<string>();
-        }
-        catch
-        {
-            // Handle JSON deserialization errors gracefully
-            languages = new List<string>();
-        }
-        
-        return new ServiceResponseDto
-        {
-            Id = service.Id,
-            Name = service.Name,
-            Description = service.Description,
-            Price = service.Price,
-            PriceType = service.PriceType,
-            Category = service.Category,
-            Provider = service.Provider,
-            Rating = service.Rating,
-            ReviewCount = service.ReviewCount,
-            CompletedJobs = service.CompletedJobs,
-            DeliveryTime = service.DeliveryTime,
-            ImageUrl = service.ImageUrl,
-            Verified = service.Verified,
-            Available = service.Available,
-            Languages = languages,
-            CreatedAt = service.CreatedAt,
-            UpdatedAt = service.UpdatedAt
-        };
+        return await repository.GetCategoriesAsync(cancellationToken);
     }
 }

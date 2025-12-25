@@ -14,7 +14,7 @@ public class ServiceRepository(AppDbContext context) : Repository<Service>(conte
     public async Task<(IEnumerable<Service> Items, int TotalCount)> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice, decimal? maxPrice, 
     CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
+        var query = _dbSet.AsNoTracking();
         
         if (!string.IsNullOrEmpty(category))
         {
@@ -31,7 +31,7 @@ public class ServiceRepository(AppDbContext context) : Repository<Service>(conte
             query = query.Where(s => s.Price <= maxPrice.Value);
         }
         
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
         
         var items = await query.OrderByDescending(s => s.CreatedAt).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
             
@@ -41,7 +41,7 @@ public class ServiceRepository(AppDbContext context) : Repository<Service>(conte
     /// <inheritdoc />
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbSet.Where(s => !string.IsNullOrEmpty(s.Category)).Select(s => s.Category!).Distinct().OrderBy(c => c).ToListAsync(default);
+        return await _dbSet.Where(s => !string.IsNullOrEmpty(s.Category)).Select(s => s.Category!).Distinct().OrderBy(c => c).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />

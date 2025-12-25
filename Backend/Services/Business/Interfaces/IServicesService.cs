@@ -22,21 +22,21 @@ public interface IServicesService
     /// <param name="minPrice">Optional minimum price filter (inclusive).</param>
     /// <param name="maxPrice">Optional maximum price filter (inclusive).</param>
     /// <returns>PaginatedServicesDto with services and pagination metadata.</returns>
-    Task<PaginatedServicesDto> GetServices(string? category, int page, int pageSize, decimal? minPrice, decimal? maxPrice);
+    Task<PaginatedServicesResponseDto> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice, decimal? maxPrice, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieve detailed information about a specific service.
     /// </summary>
     /// <param name="id">The service ID to retrieve.</param>
     /// <returns>ServiceResponseDto if found; null otherwise.</returns>
-    Task<ServiceResponseDto?> GetServiceById(int id);
+    Task<ServiceResponseDto?> GetServiceByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new service.
     /// </summary>
     /// <param name="serviceDto">The service details to create.</param>
     /// <returns>ServiceResponseDto representing the created service with generated ID.</returns>
-    Task<ServiceResponseDto> CreateService(ServiceDto serviceDto);
+    Task<ServiceResponseDto> CreateServiceAsync(ServiceDto serviceDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Update an existing service.
@@ -46,7 +46,7 @@ public interface IServicesService
     /// <returns>
     /// ServiceResponseDto with updated data if found; null if service does not exist.
     /// </returns>
-    Task<ServiceResponseDto?> UpdateService(int id, ServiceDto serviceDto);
+    Task<ServiceResponseDto?> UpdateServiceAsync(int id, ServiceDto serviceDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete a service.
@@ -55,7 +55,7 @@ public interface IServicesService
     /// <returns>
     /// True if deletion was successful; false if service does not exist.
     /// </returns>
-    Task<bool> DeleteService(int id);
+    Task<bool> DeleteServiceAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieve all available service categories.
@@ -64,5 +64,5 @@ public interface IServicesService
     /// by at least one service.
     /// </summary>
     /// <returns>An enumerable collection of category names.</returns>
-    Task<IEnumerable<string>> GetCategories();
+    Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 }

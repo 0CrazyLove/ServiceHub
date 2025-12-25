@@ -11,7 +11,6 @@ using Backend.Services.Database.Implementations;
 using Backend.Services.Database.Interfaces;
 using Backend.Repository.Interfaces;
 using Backend.Repository.Implementations;
-using Microsoft.AspNetCore.Http;
 
 namespace Backend.Extensions;
 
@@ -44,6 +43,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<IServicesService, ServicesService>();
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
+
+        // AutoMapper
+        services.AddAutoMapper(cfg => {}, typeof(Program));
 
         // Configuration settings
         services.AddSingleton<JwtSettings>();
