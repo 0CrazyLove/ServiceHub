@@ -1,10 +1,10 @@
 using AutoMapper;
 using Backend.Models;
 using Backend.DTOs.Services;
-using Backend.Services.Business.Interfaces;
+using Backend.Services.ServiceManagement.Interfaces;
 using Backend.Repository.Interfaces;
 
-namespace Backend.Services.Business.Implemetations;
+namespace Backend.Services.ServiceManagement.Implementations;
 
 /// <summary>
 /// Implementation of service catalog management.
