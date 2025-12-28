@@ -9,9 +9,7 @@
 /// - Business services registration
 /// - Database seeding
 /// </summary>
-
 using Backend.Extensions;
-using Backend.Services.Database.Interfaces;
 using DotNetEnv;
 using System.Diagnostics;
 using Backend.Configurations;
@@ -20,7 +18,6 @@ Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file
 Env.Load();
 
 var jwtSettings = new JwtSettings();
@@ -33,12 +30,12 @@ builder.Services.AddGoogleOAuth();
 builder.Services.AddCorsConfiguration();
 builder.Services.AddApplicationServices();
 
-// Add controllers
 builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Seed database on startup
-await SeedDatabaseAsync(app);
+await app.SeedDatabaseAsync();
 
 // Configure middleware pipeline
 app.UseCors("AllowFrontend");
@@ -48,13 +45,3 @@ app.MapControllers();
 app.MapHealthEndpoints();
 
 app.Run();
-
-/// <summary>
-/// Seeds the database using the DatabaseSeeder service.
-/// </summary>
-static async Task SeedDatabaseAsync(WebApplication app)
-{
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeeder>();
-    await seeder.SeedAsync();
-}

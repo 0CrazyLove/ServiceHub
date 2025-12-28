@@ -1,5 +1,5 @@
 using Backend.DTOs.Services;
-using Backend.Services.Business.Interfaces;
+using Backend.Services.ServiceManagement.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 

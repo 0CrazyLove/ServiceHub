@@ -1,46 +1,58 @@
 /// <summary>
-/// Database seeding service implementation.
-/// Creates default roles and admin user on application startup.
+/// Implementation of the <see cref="IDatabaseSeeder"/> service.
+/// Responsible for initializing the identity system with required roles (Admin, Customer)
+/// and ensuring the existence of a default administrator account.
 /// </summary>
-
 using Microsoft.AspNetCore.Identity;
 using Backend.Services.Database.Interfaces;
+
 namespace Backend.Services.Database.Implementations;
 
 public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager) : IDatabaseSeeder
 {
-
-    /// <summary>
-    /// Seeds the database with Admin and Customer roles, and creates default admin user.
-    /// Default credentials: username "admin", email "admin@example.com", password "Admin123!"
-    /// </summary>
+    /// <inheritdoc />
     public async Task SeedAsync()
     {
         await SeedRolesAsync();
         await SeedAdminUserAsync();
     }
 
+    /// <summary>
+    /// Ensures that the required application roles exist in the persistence store.
+    /// </summary>
+    /// <remarks>
+    /// This method checks for the existence of "Admin" and "Customer" roles.
+    /// If a role is missing, it is created. This ensures that the authorization system
+    /// has the necessary claims foundation to function correctly.
+    /// </remarks>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task SeedRolesAsync()
     {
-        // Create Admin role if it doesn't exist
-        if (!await roleManager.RoleExistsAsync("Admin"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
+        string[] allRoles = ["Admin", "Customer"];
 
-        // Create Customer role if it doesn't exist
-        if (!await roleManager.RoleExistsAsync("Customer"))
+        foreach (var role in allRoles)
         {
-            await roleManager.CreateAsync(new IdentityRole("Customer"));
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
     }
 
+    /// <summary>
+    /// Provisions a default administrator user if one does not already exist.
+    /// </summary>
+    /// <remarks>
+    /// The default admin user is created with the email "admin@example.com" and a predefined password.
+    /// This account is automatically assigned to the "Admin" role and has its email confirmed,
+    /// allowing immediate access to administrative features upon initial deployment.
+    /// </remarks>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task SeedAdminUserAsync()
     {
         var adminEmail = "admin@example.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-        // Create default admin user if not already present
         if (adminUser is null)
         {
             adminUser = new IdentityUser

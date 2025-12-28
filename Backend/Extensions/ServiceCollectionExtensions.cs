@@ -1,8 +1,8 @@
 using Backend.Configurations;
 using Backend.Services.Auth.Implementations;
 using Backend.Services.Auth.Interfaces;
-using Backend.Services.Business.Implemetations;
-using Backend.Services.Business.Interfaces;
+using Backend.Services.ServiceManagement.Implementations;
+using Backend.Services.ServiceManagement.Interfaces;
 using Backend.Services.Dashboard.Implementations;
 using Backend.Services.Dashboard.Interfaces;
 using Backend.Services.Orders.Implementations;
