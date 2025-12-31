@@ -3,6 +3,7 @@ using Backend.Models;
 using Backend.DTOs.Services;
 using Backend.Services.ServiceManagement.Interfaces;
 using Backend.Repository.Interfaces;
+using System.Diagnostics;
 
 namespace Backend.Services.ServiceManagement.Implementations;
 
@@ -14,7 +15,9 @@ namespace Backend.Services.ServiceManagement.Implementations;
 /// </summary>
 /// <param name="repository">The repository for accessing service data.</param>
 /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-public class ServicesService(IServiceRepository repository, IMapper mapper) : IServicesService
+/// <param name="logger">The logger instance.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor.</param>
+public class ServicesService(IServiceRepository repository, IMapper mapper, ILogger<ServicesService> logger, IHttpContextAccessor httpContextAccessor) : IServicesService
 {
     /// <summary>
     /// Retrieves a paginated list of services with optional filtering by category and price.
@@ -28,19 +31,32 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     public async Task<PaginatedServicesResponseDto> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice, decimal? maxPrice,
      CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Retrieving services. Category: {Category}, Page: {Page}, PageSize: {PageSize}. CorrelationId: {CorrelationId}", category, page, pageSize, correlationId);
 
-        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-        var serviceDtos = mapper.Map<IList<ServiceResponseDto>>(items);
-
-        return new PaginatedServicesResponseDto
+        try
         {
-            Items = serviceDtos,
-            TotalPages = totalPages,
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalCount = totalCount
-        };
+            var (items, totalCount) = await repository.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
+
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var serviceDtos = mapper.Map<IList<ServiceResponseDto>>(items);
+
+            logger.LogInformation("Successfully retrieved {Count} services. CorrelationId: {CorrelationId}", items.Count(), correlationId);
+
+            return new PaginatedServicesResponseDto
+            {
+                Items = serviceDtos,
+                TotalPages = totalPages,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving services. CorrelationId: {CorrelationId}", correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -50,8 +66,27 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     /// <returns>The service details if found; otherwise, null.</returns>
     public async Task<ServiceResponseDto?> GetServiceByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id, cancellationToken);
-        return service is null ? null : mapper.Map<ServiceResponseDto>(service);
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Retrieving service details. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+
+        try
+        {
+            var service = await repository.GetByIdAsync(id, cancellationToken);
+            
+            if (service is null)
+            {
+                logger.LogWarning("Service not found. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+                return null;
+            }
+
+            logger.LogInformation("Successfully retrieved service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+            return mapper.Map<ServiceResponseDto>(service);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -61,12 +96,25 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     /// <returns>The created service details.</returns>
     public async Task<ServiceResponseDto> CreateServiceAsync(ServiceDto serviceDto, CancellationToken cancellationToken = default)
     {
-        var newService = mapper.Map<Service>(serviceDto);
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Creating new service. Name: {ServiceName}. CorrelationId: {CorrelationId}", serviceDto.Name, correlationId);
 
-        await repository.AddAsync(newService, cancellationToken);
-        await repository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            var newService = mapper.Map<Service>(serviceDto);
 
-        return mapper.Map<ServiceResponseDto>(newService);
+            await repository.AddAsync(newService, cancellationToken);
+            await repository.SaveChangesAsync(cancellationToken);
+
+            logger.LogInformation("Successfully created service. ID: {ServiceId}. CorrelationId: {CorrelationId}", newService.Id, correlationId);
+
+            return mapper.Map<ServiceResponseDto>(newService);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating service. CorrelationId: {CorrelationId}", correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -77,15 +125,32 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     /// <returns>The updated service details if found; otherwise, null.</returns>
     public async Task<ServiceResponseDto?> UpdateServiceAsync(int id, ServiceDto serviceDto, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id, cancellationToken);
-        
-        if (service is null) return null;
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Updating service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
 
-        mapper.Map<ServiceResponseDto>(service);
+        try
+        {
+            var service = await repository.GetByIdAsync(id, cancellationToken);
+            
+            if (service is null)
+            {
+                logger.LogWarning("Service not found for update. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+                return null;
+            }
 
-        await repository.SaveChangesAsync(cancellationToken);
+            mapper.Map(serviceDto, service);
 
-        return mapper.Map<ServiceResponseDto>(service);
+            await repository.SaveChangesAsync(cancellationToken);
+
+            logger.LogInformation("Successfully updated service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+
+            return mapper.Map<ServiceResponseDto>(service);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -95,13 +160,30 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     /// <returns>True if the service was deleted; false if not found.</returns>
     public async Task<bool> DeleteServiceAsync(int id, CancellationToken cancellationToken = default)
     {
-        var service = await repository.GetByIdAsync(id, cancellationToken);
-        if (service is null) return false;
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Deleting service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
 
-        repository.Remove(service);
-        await repository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            var service = await repository.GetByIdAsync(id, cancellationToken);
+            if (service is null)
+            {
+                logger.LogWarning("Service not found for deletion. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+                return false;
+            }
 
-        return true;
+            repository.Remove(service);
+            await repository.SaveChangesAsync(cancellationToken);
+
+            logger.LogInformation("Successfully deleted service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -110,6 +192,19 @@ public class ServicesService(IServiceRepository repository, IMapper mapper) : IS
     /// <returns>A list of unique category names, sorted alphabetically.</returns>
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
-        return await repository.GetCategoriesAsync(cancellationToken);
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Retrieving service categories. CorrelationId: {CorrelationId}", correlationId);
+
+        try
+        {
+            var categories = await repository.GetCategoriesAsync(cancellationToken);
+            logger.LogInformation("Successfully retrieved {Count} categories. CorrelationId: {CorrelationId}", categories.Count(), correlationId);
+            return categories;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving categories. CorrelationId: {CorrelationId}", correlationId);
+            throw;
+        }
     }
 }

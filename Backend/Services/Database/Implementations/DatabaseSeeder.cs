@@ -5,16 +5,29 @@
 /// </summary>
 using Microsoft.AspNetCore.Identity;
 using Backend.Services.Database.Interfaces;
+using System.Diagnostics;
 
 namespace Backend.Services.Database.Implementations;
 
-public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager) : IDatabaseSeeder
+public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<DatabaseSeeder> logger, IHttpContextAccessor httpContextAccessor) : IDatabaseSeeder
 {
     /// <inheritdoc />
     public async Task SeedAsync()
     {
-        await SeedRolesAsync();
-        await SeedAdminUserAsync();
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Starting database seeding. CorrelationId: {CorrelationId}", correlationId);
+
+        try
+        {
+            await SeedRolesAsync();
+            await SeedAdminUserAsync();
+            logger.LogInformation("Database seeding completed successfully. CorrelationId: {CorrelationId}", correlationId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error during database seeding. CorrelationId: {CorrelationId}", correlationId);
+            throw;
+        }
     }
 
     /// <summary>
@@ -28,14 +41,26 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task SeedRolesAsync()
     {
-        string[] allRoles = ["Admin", "Customer"];
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Seeding roles. CorrelationId: {CorrelationId}", correlationId);
 
-        foreach (var role in allRoles)
+        try
         {
-            if (!await roleManager.RoleExistsAsync(role))
+            string[] allRoles = ["Admin", "Customer"];
+
+            foreach (var role in allRoles)
             {
-                await roleManager.CreateAsync(new IdentityRole(role));
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                    logger.LogInformation("Created role: {Role}. CorrelationId: {CorrelationId}", role, correlationId);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error seeding roles. CorrelationId: {CorrelationId}", correlationId);
+            throw;
         }
     }
 
@@ -50,20 +75,36 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task SeedAdminUserAsync()
     {
-        var adminEmail = "admin@example.com";
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        var correlationId = Activity.Current?.Id ?? "unknown";
+        logger.LogDebug("Seeding admin user. CorrelationId: {CorrelationId}", correlationId);
 
-        if (adminUser is null)
+        try
         {
-            adminUser = new IdentityUser
-            {
-                UserName = "admin",
-                Email = adminEmail,
-                EmailConfirmed = true
-            };
+            var adminEmail = "admin@example.com";
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-            await userManager.CreateAsync(adminUser, "Admin123!");
-            await userManager.AddToRoleAsync(adminUser, "Admin");
+            if (adminUser is null)
+            {
+                adminUser = new IdentityUser
+                {
+                    UserName = "admin",
+                    Email = adminEmail,
+                    EmailConfirmed = true
+                };
+
+                await userManager.CreateAsync(adminUser, "Admin123!");
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+                logger.LogInformation("Created admin user: {Email}. CorrelationId: {CorrelationId}", adminEmail, correlationId);
+            }
+            else
+            {
+                logger.LogDebug("Admin user already exists. CorrelationId: {CorrelationId}", correlationId);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error seeding admin user. CorrelationId: {CorrelationId}", correlationId);
+            throw;
         }
     }
 }

@@ -16,7 +16,7 @@ public class AuthService(
     IJwtTokenService jwtTokenService,
     IGoogleAuthService googleAuthService,
     IRefreshTokenService refreshTokenService,
-    ILogger<AuthService> logger) : IAuthService
+    ILogger<AuthService> logger, IHttpContextAccessor httpContextAccessor) : IAuthService
 {
     /// <summary>
     /// Registers a new user account with the provided email and password.
@@ -25,7 +25,7 @@ public class AuthService(
     /// <returns>A tuple containing the auth response, success status, and any errors.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded)> RegisterUserAsync(RegisterDto model)
     {
-        var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
 
         try
         {
@@ -78,7 +78,7 @@ public class AuthService(
     /// <returns>A tuple containing the auth response and success status.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model)
     {
-        var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
 
         try
         {
@@ -140,9 +140,9 @@ public class AuthService(
     /// <returns>A tuple containing the auth response and success status.</returns>
     public async Task<(AuthResponseDto? response, bool succeeded)> GoogleCallbackAsync(string authorizationCode, CancellationToken cancellationToken)
     {
-        var correlationId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
 
-        logger.LogInformation("Starting Google OAuth callback. CorrelationId: {CorrelationId}", correlationId);
+        logger.LogDebug("Starting Google OAuth callback. CorrelationId: {CorrelationId}", correlationId);
 
         try
         {
@@ -168,7 +168,6 @@ public class AuthService(
             if (!string.IsNullOrEmpty(tokenResponse.RefreshToken))
             {
                 await refreshTokenService.SaveRefreshTokenAsync(user.Id, tokenResponse.RefreshToken, tokenResponse.ExpiresIn, cancellationToken);
-                logger.LogDebug("Refresh token saved for user {UserId}. CorrelationId: {CorrelationId}", user.Id, correlationId);
             }
 
             await googleAuthService.UpdateGoogleClaimsAsync(user, userInfo);

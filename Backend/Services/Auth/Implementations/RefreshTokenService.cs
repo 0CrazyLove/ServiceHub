@@ -1,6 +1,7 @@
 using Backend.Models;
 using Backend.Repository.Interfaces;
 using Backend.Services.Auth.Interfaces;
+using System.Diagnostics;
 
 namespace Backend.Services.Auth.Implementations;
 
@@ -9,7 +10,7 @@ namespace Backend.Services.Auth.Implementations;
 /// </summary>
 /// <param name="repository">The repository for accessing refresh token data.</param>
 /// <param name="logger">The logger instance.</param>
-public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<RefreshTokenService> logger) : IRefreshTokenService
+public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<RefreshTokenService> logger, IHttpContextAccessor httpContextAccessor) : IRefreshTokenService
 {
     /// <summary>
     /// Store or update Google refresh token for a user.
@@ -17,27 +18,39 @@ public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<Ref
     /// </summary>
     public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn, CancellationToken cancellationToken = default)
     {
-        var existingToken = await repository.GetByUserIdAsync(userId, cancellationToken);
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        logger.LogDebug("Saving refresh token for user {UserId}. CorrelationId: {CorrelationId}", userId, correlationId);
 
-        if (existingToken is not null)
+        try
         {
-            existingToken.RefreshToken = refreshToken;
-            existingToken.ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
-            logger.LogDebug("Updated refresh token for user: {UserId}", userId);
-        }
-        else
-        {
-            var newToken = new UserGoogleToken
+            var existingToken = await repository.GetByUserIdAsync(userId, cancellationToken);
+
+            if (existingToken is not null)
             {
-                UserId = userId,
-                RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn),
-                CreatedAt = DateTime.UtcNow
-            };
-            await repository.AddAsync(newToken);
-            logger.LogDebug("Created new refresh token for user: {UserId}", userId);
-        }
+                existingToken.RefreshToken = refreshToken;
+                existingToken.ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
+                logger.LogDebug("Updated existing refresh token for user {UserId}. CorrelationId: {CorrelationId}", userId, correlationId);
+            }
+            else
+            {
+                var newToken = new UserGoogleToken
+                {
+                    UserId = userId,
+                    RefreshToken = refreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn),
+                    CreatedAt = DateTime.UtcNow
+                };
+                await repository.AddAsync(newToken);
+                logger.LogDebug("Created new refresh token record for user {UserId}. CorrelationId: {CorrelationId}", userId, correlationId);
+            }
 
-        await repository.SaveChangesAsync(cancellationToken);
+            await repository.SaveChangesAsync(cancellationToken);
+            logger.LogInformation("Successfully saved refresh token for user {UserId}. CorrelationId: {CorrelationId}", userId, correlationId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error saving refresh token for user {UserId}. CorrelationId: {CorrelationId}", userId, correlationId);
+            throw;
+        }
     }
 }
