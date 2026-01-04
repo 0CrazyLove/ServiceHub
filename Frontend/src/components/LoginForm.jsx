@@ -35,7 +35,7 @@ export default function LoginForm({ enableGoogle = false }) {
     setLoading(true);
     try {
       const response = await loginUser({ email, password });
-      login(response, response.token);
+      login(response, response.token, response.refreshToken);
 
       setTimeout(() => {
         window.location.href = '/';
@@ -66,11 +66,10 @@ export default function LoginForm({ enableGoogle = false }) {
     setError('');
     setLoading(true);
     try {
-      // Send authorization code to backend
       const response = await googleCallback(codeResponse.code);
 
       // Store token and user data
-      login(response, response.token);
+      login(response, response.token, response.refreshToken);
 
       // Redirect to home
       setTimeout(() => {

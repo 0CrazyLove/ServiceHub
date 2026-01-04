@@ -27,6 +27,72 @@ async function handleResponse(response) {
 }
 
 /**
+ * Wrapper around fetch to handle authentication and token refreshing.
+ * 
+ * @param {string} url - The URL to fetch
+ * @param {Object} options - Fetch options
+ * @param {string} [token] - Optional override token
+ * @returns {Promise<any>} Parsed JSON response
+ */
+async function fetchWithAuth(url, options = {}, token = null) {
+  const headers = { ...options.headers };
+
+  // Use passed token or get from localStorage
+  let authToken = token || localStorage.getItem('authToken');
+
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
+  // Ensure Content-Type is set for JSON bodies if not already
+  if (options.body && !headers['Content-Type'] && typeof options.body === 'string') {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (response.status === 401) {
+    // Try to refresh
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) throw new Error('No refresh token available');
+
+      const refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+
+      if (!refreshResponse.ok) throw new Error('Refresh failed');
+
+      const data = await refreshResponse.json();
+
+      // Update tokens
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
+
+      // Dispatch event for useAuth
+      window.dispatchEvent(new Event('auth:token-updated'));
+
+      // Retry original request with new token
+      headers['Authorization'] = `Bearer ${data.token}`;
+      const retryResponse = await fetch(url, { ...options, headers });
+      return await handleResponse(retryResponse);
+
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      // Clear auth state
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('authUser');
+      throw error;
+    }
+  }
+
+  return await handleResponse(response);
+}
+
+/**
  * SERVICES OPERATIONS
  */
 
@@ -47,11 +113,11 @@ export async function getServices({ category = '', page = 1, pageSize = 10, minP
       page: page.toString(),
       pageSize: pageSize.toString(),
     });
-    
+
     if (category) params.append('category', category);
     if (minPrice !== null) params.append('minPrice', minPrice.toString());
     if (maxPrice !== null) params.append('maxPrice', maxPrice.toString());
-    
+
     const response = await fetch(`${API_URL}/services?${params}`);
     return await handleResponse(response);
   } catch (error) {
@@ -100,15 +166,10 @@ export async function getServiceCategories() {
  */
 export async function createService(serviceData, token) {
   try {
-    const response = await fetch(`${API_URL}/services`, {
+    return await fetchWithAuth(`${API_URL}/services`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(serviceData)
-    });
-    return await handleResponse(response);
+    }, token);
   } catch (error) {
     console.error('Error creating service:', error);
     throw error;
@@ -125,19 +186,15 @@ export async function createService(serviceData, token) {
  */
 export async function updateService(id, serviceData, token) {
   try {
-    const response = await fetch(`${API_URL}/services/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/services/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(serviceData)
-    });
-    
-    if (response.status === 204 || response.status === 200) {
+    }, token);
+
+    if (response && (response.success || response.id)) {
       return { success: true };
     }
-    return await handleResponse(response);
+    return response;
   } catch (error) {
     console.error(`Error updating service ${id}:`, error);
     throw error;
@@ -153,17 +210,11 @@ export async function updateService(id, serviceData, token) {
  */
 export async function deleteService(id, token) {
   try {
-    const response = await fetch(`${API_URL}/services/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (response.status === 204) {
-      return { success: true };
-    }
-    return await handleResponse(response);
+    const response = await fetchWithAuth(`${API_URL}/services/${id}`, {
+      method: 'DELETE'
+    }, token);
+
+    return { success: true };
   } catch (error) {
     console.error(`Error deleting service ${id}:`, error);
     throw error;
@@ -275,15 +326,9 @@ export async function googleCallback(code) {
  */
 export async function getDashboardStats(token) {
   try {
-    const headers = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    const response = await fetch(`${API_URL}/dashboard/stats`, {
-      method: 'GET',
-      headers
-    });
-    return await handleResponse(response);
+    return await fetchWithAuth(`${API_URL}/dashboard/stats`, {
+      method: 'GET'
+    }, token);
   } catch (error) {
     console.error('Error fetching dashboard statistics:', error);
     throw error;
@@ -304,13 +349,9 @@ export async function getDashboardStats(token) {
  */
 export async function getOrders(token) {
   try {
-    const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const response = await fetch(`${API_URL}/orders`, {
-      method: 'GET',
-      headers
-    });
-    return await handleResponse(response);
+    return await fetchWithAuth(`${API_URL}/orders`, {
+      method: 'GET'
+    }, token);
   } catch (error) {
     console.error('Error fetching orders:', error);
     throw error;
@@ -329,16 +370,10 @@ export async function getOrders(token) {
  */
 export async function createOrder(orderDto, token) {
   try {
-    const headers = {
-      'Content-Type': 'application/json'
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const response = await fetch(`${API_URL}/orders`, {
+    return await fetchWithAuth(`${API_URL}/orders`, {
       method: 'POST',
-      headers,
       body: JSON.stringify(orderDto)
-    });
-    return await handleResponse(response);
+    }, token);
   } catch (error) {
     console.error('Error creating order:', error);
     throw error;

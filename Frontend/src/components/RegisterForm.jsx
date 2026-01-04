@@ -65,29 +65,29 @@ export default function RegisterForm() {
 
     try {
       const response = await registerUser(formData);
-      
+
       // Store token and user data
-      login(response, response.token);
-      
+      login(response, response.token, response.refreshToken);
+
       // Redirect to home
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
     } catch (err) {
       // Custom error handling
-  let errorMessage = 'Error durante el registro';
-      
+      let errorMessage = 'Error durante el registro';
+
       if (err.message.includes('400') || err.message.includes('Bad Request')) {
         errorMessage =
           'Verifica que el correo no esté registrado y que los datos sean válidos.';
       } else if (err.message.includes('409') || err.message.includes('Conflict')) {
-  errorMessage = 'Este correo ya está registrado. Prueba con otro.';
+        errorMessage = 'Este correo ya está registrado. Prueba con otro.';
       } else if (err.message.includes('500')) {
-  errorMessage = 'Error del servidor. Intenta nuevamente más tarde.';
+        errorMessage = 'Error del servidor. Intenta nuevamente más tarde.';
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -130,7 +130,7 @@ export default function RegisterForm() {
         <h2 className="text-2xl font-bold text-primary-lightest mb-6 text-center">
           Crear cuenta
         </h2>
-        
+
         {/* Error message display */}
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-200 px-4 py-3 rounded-md mb-4">

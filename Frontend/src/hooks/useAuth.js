@@ -39,7 +39,7 @@ export function useAuth() {
       const parts = token.split('.');
       if (parts.length === 3) {
         const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-        
+
         // Decode UTF-8 characters properly
         const jsonPayload = decodeURIComponent(
           atob(base64)
@@ -47,7 +47,7 @@ export function useAuth() {
             .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
             .join('')
         );
-        
+
         return JSON.parse(jsonPayload);
       }
     } catch (error) {
@@ -65,11 +65,12 @@ export function useAuth() {
   useEffect(() => {
     setMounted(true);
     const storedToken = localStorage.getItem('authToken');
+    localStorage.getItem('refreshToken');
     const storedUser = localStorage.getItem('authUser');
-    
+
     if (storedToken && storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      
+
       // Extract additional information from JWT token
       const tokenPayload = decodeToken(storedToken);
       if (tokenPayload) {
@@ -77,11 +78,21 @@ export function useAuth() {
         parsedUser.picture = tokenPayload.picture;
         parsedUser.displayName = tokenPayload.display_name;
       }
-      
+
       setToken(storedToken);
       setUser(parsedUser);
     }
     setLoading(false);
+
+    const handleTokenUpdate = () => {
+      const newToken = localStorage.getItem('authToken');
+      if (newToken) {
+        setToken(newToken);
+      }
+    };
+
+    window.addEventListener('auth:token-updated', handleTokenUpdate);
+    return () => window.removeEventListener('auth:token-updated', handleTokenUpdate);
   }, []);
 
   /**
@@ -92,18 +103,20 @@ export function useAuth() {
    * 
    * @param {Object} userData - User information from auth response
    * @param {string} authToken - JWT authentication token
+   * @param {string} refreshToken - Refresh token
    */
-  const login = (userData, authToken) => {
+  const login = (userData, authToken, refreshToken) => {
     // Extract additional information from token
     const tokenPayload = decodeToken(authToken);
     if (tokenPayload) {
       userData.picture = tokenPayload.picture;
       userData.displayName = tokenPayload.display_name;
     }
-    
+
     setToken(authToken);
     setUser(userData);
     localStorage.setItem('authToken', authToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('authUser', JSON.stringify(userData));
   };
 
@@ -114,6 +127,7 @@ export function useAuth() {
     setToken(null);
     setUser(null);
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('authUser');
   };
 
