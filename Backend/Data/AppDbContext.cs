@@ -34,8 +34,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<OrderItem> OrderItems { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserGoogleTokens DbSet.
-    /// Represents stored Google OAuth refresh tokens for users.
+    /// Gets or sets the UserRefreshTokens DbSet.
+    /// Represents stored refresh tokens for users.
     /// </summary>
-    public DbSet<UserGoogleToken> UserGoogleTokens { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 }
