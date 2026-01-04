@@ -6,16 +6,13 @@ using System.Diagnostics;
 namespace Backend.Services.Auth.Implementations;
 
 /// <summary>
-/// Service responsible for managing Google refresh tokens in the database.
+/// Service responsible for managing refresh tokens in the database.
 /// </summary>
 /// <param name="repository">The repository for accessing refresh token data.</param>
 /// <param name="logger">The logger instance.</param>
 public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<RefreshTokenService> logger, IHttpContextAccessor httpContextAccessor) : IRefreshTokenService
 {
-    /// <summary>
-    /// Store or update Google refresh token for a user.
-    /// Creates new record or updates existing one with new token and expiration time.
-    /// </summary>
+    /// <inheritdoc />
     public async Task SaveRefreshTokenAsync(string userId, string refreshToken, int expiresIn, CancellationToken cancellationToken = default)
     {
         var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
@@ -33,7 +30,7 @@ public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<Ref
             }
             else
             {
-                var newToken = new UserGoogleToken
+                var newToken = new UserRefreshToken
                 {
                     UserId = userId,
                     RefreshToken = refreshToken,
@@ -53,4 +50,20 @@ public class RefreshTokenService(IRefreshTokenRepository repository, ILogger<Ref
             throw;
         }
     }
+    public async Task RevokeRefreshTokenAsync(int tokenId, CancellationToken cancellationToken = default)
+    {
+        var token = await repository.GetByIdAsync(tokenId, cancellationToken);
+        
+        if (token is not null)
+        {
+            await repository.DeleteAsync(token, cancellationToken);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<UserRefreshToken?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        return await repository.GetByTokenAsync(refreshToken, cancellationToken);
+    }
+
 }

@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Cryptography;
 using Backend.Services.Auth.Interfaces;
 
 namespace Backend.Services.Auth.Implementations;
@@ -13,14 +14,12 @@ namespace Backend.Services.Auth.Implementations;
 /// </summary>
 public class JwtTokenService(JwtSettings jwtSettings) : IJwtTokenService
 {
-    /// <summary>
-    /// Generate JWT bearer token for authentication.
-    /// </summary>
+    /// <inheritdoc />
     public string GenerateToken(IdentityUser user, IList<string> roles, string? displayName = null, string? picture = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
+
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
@@ -33,7 +32,7 @@ public class JwtTokenService(JwtSettings jwtSettings) : IJwtTokenService
         {
             claims.Add(new Claim("display_name", displayName));
         }
-        
+
         if (!string.IsNullOrEmpty(picture))
         {
             claims.Add(new Claim("picture", picture));
@@ -50,5 +49,14 @@ public class JwtTokenService(JwtSettings jwtSettings) : IJwtTokenService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <inheritdoc />
+    public string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
 }

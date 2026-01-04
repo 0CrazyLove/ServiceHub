@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace Backend.Repository.Interfaces;
 
 /// <summary>
@@ -12,6 +10,7 @@ public interface IRepository<T> where T : class
     /// Retrieves an entity by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the entity.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param> 
     /// <returns>The entity if found; otherwise, null.</returns>
     Task<T?> GetByIdAsync(object id, CancellationToken cancellationToken = default);
 
@@ -19,17 +18,20 @@ public interface IRepository<T> where T : class
     /// Adds a new entity to the repository.
     /// </summary>
     /// <param name="entity">The entity to add.</param>
+    ///     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes an entity from the repository.
+    /// Deletes an entity from the repository.
     /// </summary>
-    /// <param name="entity">The entity to remove.</param>
-    void Remove(T entity);
+    /// <param name="entity">The entity to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Saves all changes made in this context to the database.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
 }

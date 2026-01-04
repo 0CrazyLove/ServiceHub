@@ -15,4 +15,10 @@ public interface IJwtTokenService
     /// <param name="picture">Optional profile picture URL (for Google OAuth)</param>
     /// <returns>JWT token string</returns>
     string GenerateToken(IdentityUser user, IList<string> roles, string? displayName = null, string? picture = null);
+
+    /// <summary>
+    /// Generates a secure random refresh token.
+    /// </summary>
+    /// <returns>A base64 encoded random string.</returns>
+    string GenerateRefreshToken();
 }

@@ -1,5 +1,4 @@
 using Backend.DTOs.Auth;
-using Microsoft.AspNetCore.Identity;
 namespace Backend.Services.Auth.Interfaces;
 
 /// <summary>
@@ -18,8 +17,8 @@ public interface IAuthService
     /// <param name="model">Registration data (username, email, password).</param>
     /// <returns>
     /// A tuple containing:
-    /// - AuthResponseDto with JWT token if registration succeeds (null if fails)
-    /// - Boolean indicating success or failure
+    /// AuthResponseDto with JWT token if registration succeeds (null if fails)
+    /// Boolean indicating success or failure
     /// </returns>
     Task<(AuthResponseDto? response, bool succeeded)> RegisterUserAsync(RegisterDto model);
 
@@ -32,8 +31,8 @@ public interface IAuthService
     /// <param name="model">Login credentials (email, password).</param>
     /// <returns>
     /// A tuple containing:
-    /// - AuthResponseDto with JWT token if authentication succeeds (null if fails)
-    /// - Boolean indicating success or failure
+    /// AuthResponseDto with JWT token if authentication succeeds (null if fails)
+    /// Boolean indicating success or failure
     /// </returns>
     Task<(AuthResponseDto? response, bool succeeded)> LoginUserAsync(LoginDto model);
 
@@ -46,8 +45,19 @@ public interface IAuthService
     /// <param name="code">The authorization code from Google OAuth.</param>
     /// <returns>
     /// A tuple containing:
-    /// - AuthResponseDto with JWT token if authentication succeeds (null if fails)
-    /// - Boolean indicating success or failure
+    /// AuthResponseDto with JWT token if authentication succeeds (null if fails)
+    /// Boolean indicating success or failure
     /// </returns>
     Task<(AuthResponseDto? response, bool succeeded)> GoogleCallbackAsync(string code, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Refreshes the JWT access token using a valid refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The current refresh token.</param>
+    /// <returns>
+    /// A tuple containing:
+    /// AuthResponseDto with new JWT token and refresh token if successful (null if fails)
+    /// Boolean indicating success or failure
+    /// </returns>
+    Task<(AuthResponseDto? response, bool succeeded)> RefreshTokenAsync(string refreshToken);
 }

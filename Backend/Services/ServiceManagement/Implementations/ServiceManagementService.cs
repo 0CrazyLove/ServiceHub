@@ -172,8 +172,7 @@ public class ServicesService(IServiceRepository repository, IMapper mapper, ILog
                 return false;
             }
 
-            repository.Remove(service);
-            await repository.SaveChangesAsync(cancellationToken);
+            await repository.DeleteAsync(service, cancellationToken);
 
             logger.LogInformation("Successfully deleted service. ID: {ServiceId}. CorrelationId: {CorrelationId}", id, correlationId);
 

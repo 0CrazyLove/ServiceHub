@@ -75,4 +75,25 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Refresh the JWT access token using a valid refresh token.
+    /// </summary>
+    /// <param name="model">Contains the refresh token.</param>
+    /// <returns>
+    /// Returns 200 OK with a new AuthResponseDto containing a new JWT token and refresh token.
+    /// Returns 400 Bad Request if the refresh token is missing or invalid.
+    /// Returns 401 Unauthorized if the refresh token is expired or revoked.
+    /// </returns>
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto model)
+    {
+        if (string.IsNullOrEmpty(model.RefreshToken)) return BadRequest(new { message = "Refresh token is required" });
+
+        var (response, succeeded) = await authService.RefreshTokenAsync(model.RefreshToken);
+
+        if (!succeeded || response is null) return Unauthorized(new { message = "Invalid or expired refresh token" });
+        
+        return Ok(response);
+    }
 }

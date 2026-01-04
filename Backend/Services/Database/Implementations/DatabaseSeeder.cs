@@ -14,13 +14,15 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
     /// <inheritdoc />
     public async Task SeedAsync()
     {
-        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
+        // Genera un correlationId si no existe ninguno
+        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
+
         logger.LogDebug("Starting database seeding. CorrelationId: {CorrelationId}", correlationId);
 
         try
         {
-            await SeedRolesAsync();
-            await SeedAdminUserAsync();
+            await SeedRolesAsync(correlationId);
+            await SeedAdminUserAsync(correlationId);
             logger.LogInformation("Database seeding completed successfully. CorrelationId: {CorrelationId}", correlationId);
         }
         catch (Exception ex)
@@ -30,18 +32,8 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
         }
     }
 
-    /// <summary>
-    /// Ensures that the required application roles exist in the persistence store.
-    /// </summary>
-    /// <remarks>
-    /// This method checks for the existence of "Admin" and "Customer" roles.
-    /// If a role is missing, it is created. This ensures that the authorization system
-    /// has the necessary claims foundation to function correctly.
-    /// </remarks>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task SeedRolesAsync()
+    private async Task SeedRolesAsync(string correlationId)
     {
-        var correlationId = Activity.Current?.Id ?? httpContextAccessor.HttpContext?.TraceIdentifier;
         logger.LogDebug("Seeding roles. CorrelationId: {CorrelationId}", correlationId);
 
         try
@@ -64,18 +56,8 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
         }
     }
 
-    /// <summary>
-    /// Provisions a default administrator user if one does not already exist.
-    /// </summary>
-    /// <remarks>
-    /// The default admin user is created with the email "admin@example.com" and a predefined password.
-    /// This account is automatically assigned to the "Admin" role and has its email confirmed,
-    /// allowing immediate access to administrative features upon initial deployment.
-    /// </remarks>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task SeedAdminUserAsync()
+    private async Task SeedAdminUserAsync(string correlationId)
     {
-        var correlationId = Activity.Current?.Id ?? "unknown";
         logger.LogDebug("Seeding admin user. CorrelationId: {CorrelationId}", correlationId);
 
         try

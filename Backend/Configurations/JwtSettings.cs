@@ -12,6 +12,7 @@ public class JwtSettings
         Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")!;
         Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")!;
         ExpirationMinutes = Convert.ToInt32(Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"))!;
+        RefreshTokenExpiryDays = 7;
     }
     /// <summary>
     /// Gets or sets the secret key used to sign and verify JWT tokens.
@@ -36,4 +37,9 @@ public class JwtSettings
     /// Retrieved from the JWT_EXPIRATION_MINUTES environment variable.
     /// </summary>
     public int ExpirationMinutes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the expiration time for refresh tokens in days.
+    /// </summary>
+    public int RefreshTokenExpiryDays { get; set; }
 }

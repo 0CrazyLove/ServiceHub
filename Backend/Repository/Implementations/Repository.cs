@@ -23,11 +23,13 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : clas
     {
         await _dbSet.AddAsync(entity, cancellationToken);
     }
-    
+
     /// <inheritdoc />
-    public void Remove(T entity)
+    public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default)
     {
         _dbSet.Remove(entity);
+        
+        await SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />

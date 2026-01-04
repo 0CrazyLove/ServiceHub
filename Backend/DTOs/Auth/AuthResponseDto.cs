@@ -32,4 +32,10 @@ public class AuthResponseDto
     /// Used for authorization decisions in the frontend.
     /// </summary>
     public IList<string> Roles { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the refresh token.
+    /// Used to obtain a new access token when the current one expires.
+    /// </summary>
+    public string RefreshToken { get; set; } = string.Empty;
 }
