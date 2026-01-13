@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
         // Business services
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IOrdersService, OrdersService>();
-        services.AddScoped<IServicesService, ServicesService>();
+        services.AddScoped<IServiceManagementService, ServicesService>();
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
         // AutoMapper

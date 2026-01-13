@@ -17,7 +17,7 @@ namespace Backend.Services.ServiceManagement.Implementations;
 /// <param name="mapper">The AutoMapper instance for object mapping.</param>
 /// <param name="logger">The logger instance.</param>
 /// <param name="httpContextAccessor">The HTTP context accessor.</param>
-public class ServicesService(IServiceRepository repository, IMapper mapper, ILogger<ServicesService> logger, IHttpContextAccessor httpContextAccessor) : IServicesService
+public class ServicesService(IServiceRepository repository, IMapper mapper, ILogger<ServicesService> logger, IHttpContextAccessor httpContextAccessor) : IServiceManagementService
 {
     /// <summary>
     /// Retrieves a paginated list of services with optional filtering by category and price.

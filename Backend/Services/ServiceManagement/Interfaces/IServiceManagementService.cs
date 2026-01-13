@@ -8,7 +8,7 @@ namespace Backend.Services.ServiceManagement.Interfaces;
 /// Defines the contract for querying, creating, updating, and deleting services
 /// in the ServiceHub marketplace.
 /// </summary>
-public interface IServicesService
+public interface IServiceManagementService
 {
     /// <summary>
     /// Retrieve a paginated list of services with optional filtering.

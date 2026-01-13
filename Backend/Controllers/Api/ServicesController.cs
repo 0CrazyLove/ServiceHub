@@ -15,7 +15,7 @@ namespace Backend.Controllers.Api;
 [ApiController]
 [Authorize(Policy = "AdminPolicy")]
 [Route("api/[controller]")]
-public class ServicesController(IServicesService servicesService) : ControllerBase
+public class ServicesController(IServiceManagementService serviceManagement) : ControllerBase
 {
     /// <summary>
     /// Retrieve a paginated list of services with optional filtering.
@@ -33,7 +33,7 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [AllowAnonymous]
     public async Task<ActionResult<PaginatedServicesResponseDto>> GetServicesAsync(string? category, int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null, CancellationToken cancellationToken = default)
     {
-        var paginatedServices = await servicesService.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
+        var paginatedServices = await serviceManagement.GetServicesAsync(category, page, pageSize, minPrice, maxPrice, cancellationToken);
         return Ok(paginatedServices);
     }
 
@@ -51,7 +51,7 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [AllowAnonymous]
     public async Task<ActionResult<ServiceResponseDto>> GetServiceAsync(int id, CancellationToken cancellationToken)
     {
-        var service = await servicesService.GetServiceByIdAsync(id, cancellationToken);
+        var service = await serviceManagement.GetServiceByIdAsync(id, cancellationToken);
         if (service is null) return NotFound();
 
         return Ok(service);
@@ -68,7 +68,7 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<string>>> GetCategoriesAsync(CancellationToken cancellationToken)
     {
-        var categories = await servicesService.GetCategoriesAsync(cancellationToken);
+        var categories = await serviceManagement.GetCategoriesAsync(cancellationToken);
         return Ok(categories);
     }
 
@@ -86,9 +86,9 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [HttpPost]
     public async Task<ActionResult<ServiceResponseDto>> CreateServiceAsync(ServiceDto serviceDto, CancellationToken cancellationToken)
     {
-        var newService = await servicesService.CreateServiceAsync(serviceDto, cancellationToken);
+        var newService = await serviceManagement.CreateServiceAsync(serviceDto, cancellationToken);
         if (newService is null) return BadRequest();
-        return CreatedAtAction(nameof(GetServiceAsync), new { id = newService.Id }, newService);
+        return StatusCode(201, newService);
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [HttpPut("{id}")]
     public async Task<ActionResult<ServiceResponseDto>> UpdateServiceAsync(int id, ServiceDto serviceDto)
     {
-        var updatedService = await servicesService.UpdateServiceAsync(id, serviceDto);
+        var updatedService = await serviceManagement.UpdateServiceAsync(id, serviceDto);
         if (updatedService is null) return NotFound();
 
         return Ok(updatedService);
@@ -127,7 +127,7 @@ public class ServicesController(IServicesService servicesService) : ControllerBa
     [HttpDelete("{id}")]
     public async Task<ActionResult<bool>> DeleteServiceAsync(int id, CancellationToken cancellationToken)
     {
-        var result = await servicesService.DeleteServiceAsync(id, cancellationToken);
+        var result = await serviceManagement.DeleteServiceAsync(id, cancellationToken);
         if (!result) return NotFound();
 
         return NoContent();
