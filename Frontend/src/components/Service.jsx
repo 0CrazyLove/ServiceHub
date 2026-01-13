@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Filter, ChevronDown } from 'lucide-react';
 import { getServices } from '../../Services/api.js';
+import ServiceCard from './ServiceCard';
 
 /**
  * Services catalog component with filtering and pagination.
  * 
  * Displays a grid of available services with filtering options:
+ * - Search by name/description
  * - Category filtering
- * - Price range filtering
- * - Pagination for browsing through results
- * 
- * Shows service details including ratings, reviews, pricing, and availability.
- * Handles loading, error states, and empty results gracefully.
+ * - Sorting
+ * - Pagination
  * 
  * @returns {JSX.Element} Services grid with filters and pagination
  */
@@ -20,48 +21,11 @@ export default function Services() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [priceRange, setPriceRange] = useState({ min: null, max: null });
 
-  /**
-   * Load services on filter or page change.
-   */
-  useEffect(() => {
-    loadServices();
-  }, [currentPage, selectedCategory, priceRange]);
-
-  /**
-   * Fetch services from API with current filters and pagination.
-   * 
-   * @private
-   */
-  const loadServices = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await getServices({
-        category: selectedCategory,
-        page: currentPage,
-        pageSize: 12,
-        minPrice: priceRange.min,
-        maxPrice: priceRange.max
-      });
-
-      setServices(data.items || data);
-
-      if (data.totalPages) {
-        setTotalPages(data.totalPages);
-      }
-    } catch (err) {
-      setError(
-        'Error al cargar los servicios. Por favor intenta de nuevo.'
-      );
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Todas');
+  const [sortBy, setSortBy] = useState('rating');
 
   const categories = [
     'Todas',
@@ -70,299 +34,246 @@ export default function Services() {
     'Marketing digital',
     'Redacción y traducción',
     'Video y gráficos en movimiento',
-    'Música y audio'
+    'Música y audio',
+    'Negocios',
+    'Finanzas'
   ];
 
   /**
-   * Handle category filter change.
-   * Resets to page 1 when filter changes.
-   * 
-   * @param {string} category - Selected category name
-   * @private
+   * Initialize filters from URL query params
    */
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category === 'Todas' ? '' : category);
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get('category');
+    const searchParam = params.get('search');
+
+    if (categoryParam) setSelectedCategory(categoryParam);
+    if (searchParam) setSearchQuery(searchParam);
+  }, []);
 
   /**
-   * Handle price range filter change.
-   * Resets to page 1 when filter changes.
-   * 
-   * @param {Object} range - Price range object with min and max
-   * @private
+   * Load services when filters or page change
    */
-  const handlePriceFilter = (range) => {
-    setPriceRange(range);
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    loadServices();
+
+    // Update URL without reloading
+    const params = new URLSearchParams();
+    if (selectedCategory !== 'Todas') params.set('category', selectedCategory);
+    if (searchQuery) params.set('search', searchQuery);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+
+    const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    window.history.replaceState({}, '', newUrl);
+
+  }, [currentPage, selectedCategory, sortBy]); // Note: searchQuery is handled on submit/debounce ideally, but here we'll load on effect for simplicity or add a specific search trigger
 
   /**
-   * Render star rating display.
-   * 
-   * @param {number} rating - Rating value (0-5)
-   * @returns {JSX.Element} Star rating component
-   * @private
+   * Fetch services from API
    */
-  const renderStars = (rating) => {
-    return (
-      <div className="flex items-center gap-1">
-        {[...Array(5)].map((_, i) => (
-          <span
-            key={i}
-            className={
-              i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-600'
-            }
-          >
-            ★
-          </span>
-        ))}
-        <span className="text-primary-light text-sm ml-1">
-          ({rating.toFixed(1)})
-        </span>
-      </div>
-    );
+  const loadServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Note: The API might need updates to support 'search' and 'sortBy'
+      // For now, we pass what we can. If API doesn't support search, we might need client-side filtering
+      const data = await getServices({
+        category: selectedCategory === 'Todas' ? '' : selectedCategory,
+        page: currentPage,
+        pageSize: 12,
+        search: searchQuery, // Assuming API supports this or we filter client-side
+        sortBy: sortBy // Assuming API supports this
+      });
+
+      let items = data.items || data;
+
+      // Client-side filtering/sorting if API doesn't support it fully yet
+      // This is a fallback to ensure the UI works as expected
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        items = items.filter(s =>
+          s.name.toLowerCase().includes(lowerQuery) ||
+          s.description?.toLowerCase().includes(lowerQuery)
+        );
+      }
+
+      if (sortBy) {
+        items.sort((a, b) => {
+          switch (sortBy) {
+            case 'rating': return b.rating - a.rating;
+            case 'price-low': return a.price - b.price;
+            case 'price-high': return b.price - a.price;
+            case 'reviews': return (b.reviewCount || 0) - (a.reviewCount || 0);
+            default: return 0;
+          }
+        });
+      }
+
+      setServices(items);
+
+      if (data.totalPages) {
+        setTotalPages(data.totalPages);
+      }
+    } catch (err) {
+      setError('Error al cargar los servicios. Por favor intenta de nuevo.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-primary-darkest">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-medium border-t-primary-accent"></div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 bg-primary-darkest min-h-screen">
-        <div className="bg-red-200 text-red-700 px-4 py-3 rounded-md shadow-md flex justify-between items-center">
-          <span>{error}</span>
-          <button onClick={loadServices} className="text-red-700 font-semibold underline">
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    loadServices();
+  };
 
   return (
-    <div className="bg-primary-darkest min-h-screen">
-      <div className="container mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-primary-lightest mb-4">
-            Servicios profesionales
-          </h2>
-          <p className="text-primary-light max-w-xl mx-auto">
-            Encuentra expertos que lleven tu proyecto al siguiente nivel
-          </p>
+    <div className="min-h-screen bg-primary-darkest">
+      {/* Header */}
+      <section className="border-b border-primary-light/10 bg-primary-darkest pt-8 pb-2">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="mb-3 text-3xl font-bold text-primary-lightest md:text-4xl">Explorar servicios</h1>
+            <p className="text-primary-light max-w-2xl">
+              Encuentra el profesional perfecto para tu proyecto entre miles de expertos verificados.
+            </p>
+          </motion.div>
         </div>
+      </section>
 
-        {/* Category filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm ${(category === 'Todas' && !selectedCategory) ||
-                selectedCategory === category
-                ? 'bg-primary-accent text-white shadow-md'
-                : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-                }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+      {/* Filters Bar */}
+      <section className="border-b border-primary-light/10 bg-primary-darkest">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Search */}
+            <form onSubmit={handleSearchSubmit} className="relative max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-light/50" />
+              <input
+                type="text"
+                placeholder="Buscar servicios..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-10 pr-4 rounded-md bg-primary-medium/20 border border-primary-light/10 text-primary-lightest placeholder-primary-light/50 focus:outline-none focus:ring-2 focus:ring-primary-accent transition-all"
+              />
+            </form>
 
-        {/* Price filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
-          <button
-            onClick={() => handlePriceFilter({ min: null, max: null })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === null && priceRange.max === null
-              ? 'bg-primary-accent text-white'
-              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-              }`}
-          >
-            Todos los precios
-          </button>
-          <button
-            onClick={() => handlePriceFilter({ min: null, max: 100 })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.max === 100
-              ? 'bg-primary-accent text-white'
-              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-              }`}
-          >
-            Menos de $100
-          </button>
-          <button
-            onClick={() => handlePriceFilter({ min: 100, max: 300 })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === 100 && priceRange.max === 300
-              ? 'bg-primary-accent text-white'
-              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-              }`}
-          >
-            $100 - $300
-          </button>
-          <button
-            onClick={() => handlePriceFilter({ min: 300, max: null })}
-            className={`px-4 py-2 rounded-md text-sm transition-all duration-200 ${priceRange.min === 300
-              ? 'bg-primary-accent text-white'
-              : 'bg-primary-dark text-primary-light hover:bg-primary-medium'
-              }`}
-          >
-            Más de $300
-          </button>
-        </div>
-
-        {/* Empty state */}
-        {services.length === 0 ? (
-          <div className="text-center py-16 text-primary-light text-lg">
-            No hay servicios disponibles con los filtros seleccionados
-          </div>
-        ) : (
-          /* Services grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {services.map((service) => (
-              <div
-                key={service.id}
-                className="bg-primary-dark rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-primary-medium flex flex-col"
-              >
-                {/* Service image */}
-                <div className="h-48 bg-primary-darkest overflow-hidden relative">
-                  {service.imageUrl ? (
-                    <img
-                      src={service.imageUrl}
-                      alt={service.name}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-primary-accent">
-                      Sin imagen
-                    </div>
-                  )}
-                  {/* Verified badge */}
-                  {service.verified && (
-                    <span className="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                      ✓ Verificado
-                    </span>
-                  )}
-                  {/* Availability badge */}
-                  {!service.available && (
-                    <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                      Busy
-                    </span>
-                  )}
-                </div>
-
-                {/* Service info */}
-                <div className="p-5 flex flex-col flex-grow">
-                  <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-primary-lightest mb-1">
-                      {service.name}
-                    </h3>
-                    <p className="text-primary-accent text-sm font-medium">
-                      por {service.provider}
-                    </p>
-                  </div>
-
-                  <p className="text-primary-light text-sm mb-4 line-clamp-2 flex-grow">
-                    {service.description}
-                  </p>
-
-                  {/* Rating */}
-                  <div className="mb-3">
-                    {renderStars(service.rating)}
-                    <p className="text-primary-light text-xs mt-1">
-                      {service.reviewCount} reseñas • {service.completedJobs} trabajos
-                    </p>
-                  </div>
-
-                  {/* Price and delivery */}
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-medium">
-                    <div>
-                      <span className="text-2xl font-bold text-primary-accent">
-                        ${service.price.toFixed(2)}
-                      </span>
-                      <span className="text-primary-light text-sm ml-1">
-                        / {service.priceType}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-primary-light text-xs">Entrega:</p>
-                      <p className="text-primary-lightest text-sm font-medium">
-                        {service.deliveryTime}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Languages */}
-                  {service.languages && service.languages.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {service.languages.map((lang) => (
-                        <span
-                          key={lang}
-                          className="bg-primary-darkest text-primary-light text-xs px-2 py-1 rounded"
-                        >
-                          {lang}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Category badge */}
-                  {service.category && (
-                    <span className="inline-block bg-primary-darkest text-primary-lightest text-xs px-3 py-1 rounded-full mb-4 border border-primary-medium self-start">
-                      {service.category}
-                    </span>
-                  )}
-
-                  {/* CTA button */}
-                  <a
-                    href={`/service/${service.id}`}
-                    className={`w-full inline-block text-center py-2.5 rounded-md font-medium transition-all duration-200 ${service.available
-                      ? 'bg-primary-accent text-white hover:bg-opacity-80'
-                      : 'bg-primary-medium text-primary-light cursor-not-allowed'
-                      }`}
-                    aria-disabled={!service.available}
-                  >
-                    {service.available ? 'Ver detalles' : 'No disponible'}
-                  </a>
+            {/* Category & Sort (Mobile/Desktop) */}
+            <div className="flex items-center gap-3">
+              {/* Sort Dropdown */}
+              <div className="relative group">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary-medium/20 border border-primary-light/10 text-primary-lightest hover:bg-primary-medium/30 transition-all text-sm font-medium w-48 justify-between">
+                  <span>
+                    {sortBy === 'rating' && 'Mejor calificados'}
+                    {sortBy === 'reviews' && 'Más reseñas'}
+                    {sortBy === 'price-low' && 'Precio: Menor a mayor'}
+                    {sortBy === 'price-high' && 'Precio: Mayor a menor'}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </button>
+                {/* Dropdown Content */}
+                <div className="absolute right-0 mt-2 w-48 bg-primary-dark border border-primary-light/10 rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                  <button onClick={() => setSortBy('rating')} className="w-full text-left px-4 py-2 text-sm text-primary-light hover:bg-primary-medium/20 hover:text-white transition-colors">Mejor calificados</button>
+                  <button onClick={() => setSortBy('reviews')} className="w-full text-left px-4 py-2 text-sm text-primary-light hover:bg-primary-medium/20 hover:text-white transition-colors">Más reseñas</button>
+                  <button onClick={() => setSortBy('price-low')} className="w-full text-left px-4 py-2 text-sm text-primary-light hover:bg-primary-medium/20 hover:text-white transition-colors">Precio: Menor a mayor</button>
+                  <button onClick={() => setSortBy('price-high')} className="w-full text-left px-4 py-2 text-sm text-primary-light hover:bg-primary-medium/20 hover:text-white transition-colors">Precio: Mayor a menor</button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Category Pills */}
+          <div className="mt-4 flex flex-wrap gap-2 pb-2 overflow-x-auto no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setCurrentPage(1);
+                }}
+                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${selectedCategory === cat
+                  ? 'bg-primary-accent border-primary-accent text-white'
+                  : 'bg-primary-medium/10 border-primary-light/10 text-primary-light hover:bg-primary-medium/20 hover:text-primary-lightest'
+                  }`}
+              >
+                {cat}
+              </button>
             ))}
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-12">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
-            >
-              Anterior
-            </button>
-
-            <span className="text-primary-light">
-              Página {currentPage} de {totalPages}
-            </span>
-
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-primary-accent text-white rounded-md disabled:bg-primary-medium disabled:cursor-not-allowed hover:bg-opacity-80 transition-all"
-            >
-              Siguiente
-            </button>
+      {/* Results */}
+      <section className="py-8 min-h-[50vh]">
+        <div className="container mx-auto px-4">
+          <div className="mb-6 flex items-center justify-between">
+            <p className="text-sm text-primary-light">
+              {services.length} servicios encontrados
+            </p>
           </div>
-        )}
-      </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-medium border-t-primary-accent"></div>
+            </div>
+          ) : services.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center">
+              {services.map((service, index) => (
+                <ServiceCard key={service.id} service={service} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-20 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-medium/20 mb-4">
+                <Search className="h-8 w-8 text-primary-light/50" />
+              </div>
+              <h3 className="text-xl font-semibold text-primary-lightest mb-2">No se encontraron resultados</h3>
+              <p className="text-primary-light max-w-md mx-auto mb-6">
+                No pudimos encontrar servicios que coincidan con tus filtros. Intenta ajustar tu búsqueda o categoría.
+              </p>
+              <button
+                className="px-6 py-2 bg-primary-dark border border-primary-light/20 rounded-md text-primary-lightest hover:bg-primary-medium/20 transition-all"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('Todas');
+                  setCurrentPage(1);
+                }}
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-12 mb-8">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-primary-dark border border-primary-light/20 text-primary-lightest rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-medium/20 transition-all"
+              >
+                Anterior
+              </button>
+
+              <span className="text-primary-light text-sm">
+                Página {currentPage} de {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-primary-dark border border-primary-light/20 text-primary-lightest rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-medium/20 transition-all"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

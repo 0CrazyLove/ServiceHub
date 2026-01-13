@@ -1,0 +1,20 @@
+---
+/**
+ * Services page.
+ *
+ * Displays the full catalog of services with filtering options.
+ * Accepts 'category' query parameter to pre-filter results.
+ */
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.jsx";
+import Products from "../components/Service.jsx";
+import Footer from "../components/Footer.jsx";
+---
+
+<Layout>
+    <Header client:load />
+    <div>
+        <Products client:load />
+    </div>
+    <Footer client:load />
+</Layout>
