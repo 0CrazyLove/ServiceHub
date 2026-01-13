@@ -74,8 +74,7 @@ IMapper mapper, ILogger<OrdersService> logger) : IOrdersService
                     {
                         ServiceId = service.Id,
                         Quantity = itemDto.Quantity,
-                        Price = service.Price,
-                        Service = service 
+                        Price = service.Price, 
                     };
 
                     newOrder.OrderItems.Add(orderItem);
