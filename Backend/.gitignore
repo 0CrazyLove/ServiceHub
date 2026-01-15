@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Local development certificates
+.certs
+
 # User-specific files
 *.rsuser
 *.suo
