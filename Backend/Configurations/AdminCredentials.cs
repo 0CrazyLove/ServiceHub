@@ -13,6 +13,7 @@ public class AdminCredentials
     {
         Email = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? string.Empty;
         Password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? string.Empty;
+        Username = Environment.GetEnvironmentVariable("ADMIN_USERNAME") ?? string.Empty;
     }
 
     /// <summary>
@@ -24,4 +25,9 @@ public class AdminCredentials
     /// Gets or sets the administrator password.
     /// </summary>
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the administrator username.
+    /// </summary>
+    public string Username { get; set; } = string.Empty;
 }

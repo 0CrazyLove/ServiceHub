@@ -79,7 +79,9 @@ public class DatabaseSeeder(UserManager<IdentityUser> userManager, RoleManager<I
                 {
                     UserName = adminCredentials.Username,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    NormalizedEmail = adminEmail.ToUpperInvariant(),
+                    NormalizedUserName = adminCredentials.Username.ToUpperInvariant()
                 };
 
                 await userManager.CreateAsync(adminUser, adminCredentials.Password);
