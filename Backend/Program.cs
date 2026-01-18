@@ -19,16 +19,21 @@ Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+if (builder.Environment.IsDevelopment())
+{
+    Env.Load();
+}
 
 var jwtSettings = new JwtSettings();
+var corsSettings = new CorsSettings();
+var environment = builder.Environment;
 
 // Configure all services using extension methods
 builder.Services.AddDatabaseServices();
 builder.Services.AddJwtAuthentication(jwtSettings);
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddGoogleOAuth();
-builder.Services.AddCorsConfiguration();
+builder.Services.AddCorsConfiguration(corsSettings, environment);
 builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
